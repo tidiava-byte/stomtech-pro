@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://stomtech.pro/sitemap.xml
