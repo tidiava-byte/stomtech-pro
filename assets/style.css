@@ -171,9 +171,13 @@ p{text-wrap:pretty}
    так контент не пропадёт ни при ошибке скрипта, ни у поисковых роботов.
    Класс no-motion ставит сторож из <head>, если app.js не запустился за 2,5 с:
    анимации не будет, но текст будет виден. */
-.js [data-reveal]{opacity:0;will-change:opacity,transform}
+/* will-change здесь намеренно НЕ используется: подсказка на десятках элементов
+   разом заставляет браузер готовить слишком много композиторских слоёв, переход
+   повисает в ожидании готовности (startTime так и остаётся null) и блок никогда
+   не проявляется. Анимируются только opacity и transform — они и так дешёвые. */
+.js [data-reveal]{opacity:0}
 .no-motion [data-reveal]{opacity:1 !important;transform:none !important;clip-path:none !important;
-  transition:none !important;will-change:auto}
+  transition:none !important}
 .js [data-reveal="up"]     {transform:translate3d(0,26px,0)}
 .js [data-reveal="down"]   {transform:translate3d(0,-20px,0)}
 .js [data-reveal="left"]   {transform:translate3d(-30px,0,0)}
@@ -183,7 +187,6 @@ p{text-wrap:pretty}
 .js [data-reveal].is-in{
   opacity:1;transform:none;
   transition:opacity .85s var(--e-out) var(--d,0ms), transform .95s var(--e-out) var(--d,0ms);
-  will-change:auto;
 }
 /* маска-шторка для изображений и крупных блоков */
 .js [data-reveal="clip"]{opacity:1;clip-path:inset(0 0 100% 0)}

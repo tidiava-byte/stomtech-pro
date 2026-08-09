@@ -28,25 +28,49 @@
       });
     });
 
+    // Показать элемент и убедиться, что он действительно стал видимым.
+    // Класс is-in опирается на правило в style.css. Если таблица стилей пришла
+    // битой, устаревшей или не пришла вовсе, правило не сработает — и блок
+    // останется прозрачным. Через 2 с проверяем факт и дожимаем инлайном:
+    // пустой страницы не будет даже при испорченном CSS.
+    function reveal(el) {
+      el.classList.add('is-in');
+      setTimeout(function () {
+        if (parseFloat(getComputedStyle(el).opacity) < 0.9) {
+          el.style.opacity = '1';
+          el.style.transform = 'none';
+          el.style.clipPath = 'none';
+        }
+      }, 2000);
+    }
+
     if (!('IntersectionObserver' in window) || reduced) {
-      items.forEach(function (el) { el.classList.add('is-in'); });
+      items.forEach(reveal);
       return;
     }
-    var io = new IntersectionObserver(function (entries) {
-      entries.forEach(function (e) {
-        // элемент уже прокручен выше экрана (переход по якорю, восстановление
-        // позиции, быстрый скролл) — показываем сразу, без анимации
-        if (!e.isIntersecting && e.boundingClientRect.bottom > 0) return;
-        e.target.classList.add('is-in');
-        io.unobserve(e.target);
+
+    // Наблюдатель включается только после первого отрисованного кадра.
+    // Если сменить стиль до первой отрисовки, браузер заводит переход,
+    // у которого не разрешается время старта: он остаётся в начальной точке
+    // (opacity 0) навсегда — первый экран выглядит пустым.
+    // Два кадра гарантируют, что исходное состояние уже отрисовано.
+    requestAnimationFrame(function () {
+      requestAnimationFrame(function () {
+        var io = new IntersectionObserver(function (entries) {
+          entries.forEach(function (e) {
+            // элемент уже прокручен выше экрана (переход по якорю, восстановление
+            // позиции, быстрый скролл) — показываем сразу, без анимации
+            if (!e.isIntersecting && e.boundingClientRect.bottom > 0) return;
+            reveal(e.target);
+            io.unobserve(e.target);
+          });
+        }, { threshold: 0.08, rootMargin: '0px 0px -8% 0px' });
+        items.forEach(function (el) { io.observe(el); });
       });
-    }, { threshold: 0.08, rootMargin: '0px 0px -8% 0px' });
-    items.forEach(function (el) { io.observe(el); });
+    });
 
     // последний рубеж: что бы ни случилось, через 4 секунды контент виден
-    setTimeout(function () {
-      items.forEach(function (el) { el.classList.add('is-in'); });
-    }, 4000);
+    setTimeout(function () { items.forEach(reveal); }, 4000);
   }
 
   /* ---------------------------------------------------------
