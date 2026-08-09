@@ -48,10 +48,15 @@ function dateRu(iso) {
   return `${d.getUTCDate()} ${MONTHS[d.getUTCMonth()]} ${d.getUTCFullYear()}`;
 }
 
+/* pro:true в мета-блоке помечает материал для специалистов —
+   пациент и гигиенист сразу видят, что перед ними разный уровень текста */
+const proMark = (m) =>
+  m.pro ? '<span class="pro-mark"><i class="i i-microscope" aria-hidden="true"></i>Для специалистов</span>' : '';
+
 function postCard(p, opts = {}) {
   const m = p.meta;
-  return `<a href="${m.slug}.html" class="blog-card"${opts.filter ? ` data-cat="${m.categorySlug}"` : ''} data-reveal="up">
-        <div class="blog-cover ${m.cover || ''}"><span class="tag">${m.category}</span><i class="i i-${m.icon}" aria-hidden="true"></i></div>
+  return `<a href="${m.slug}.html" class="blog-card${m.pro ? ' is-pro' : ''}"${opts.filter ? ` data-cat="${m.categorySlug}"` : ''} data-reveal="up">
+        <div class="blog-cover ${m.cover || ''}"><span class="tag">${m.category}</span>${proMark(m)}<i class="i i-${m.icon}" aria-hidden="true"></i></div>
         <div class="blog-body">
           <h3>${m.cardTitle || m.h1}</h3>
           <p>${m.excerpt}</p>
@@ -63,7 +68,7 @@ function postCard(p, opts = {}) {
 function postHeroCard(p) {
   const m = p.meta;
   return `<a href="${m.slug}.html" class="blog-hero" data-reveal="rise">
-      <div class="blog-cover ${m.cover || ''}"><span class="tag">${m.category}</span><i class="i i-${m.icon}" aria-hidden="true"></i></div>
+      <div class="blog-cover ${m.cover || ''}"><span class="tag">${m.category}</span>${proMark(m)}<i class="i i-${m.icon}" aria-hidden="true"></i></div>
       <div class="blog-hero-body">
         <span class="kicker">Читают чаще всего</span>
         <h2>${m.cardTitle || m.h1}</h2>

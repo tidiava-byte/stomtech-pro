@@ -71,9 +71,44 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://stomtech.pro/blog-tehnika-obrabotki.html</loc>
+    <lastmod>2026-08-06</lastmod>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://stomtech.pro/blog-poddesnevaya-obrabotka.html</loc>
+    <lastmod>2026-08-04</lastmod>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://stomtech.pro/blog-implanty.html</loc>
+    <lastmod>2026-08-02</lastmod>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://stomtech.pro/blog-abrazivnost.html</loc>
+    <lastmod>2026-07-31</lastmod>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://stomtech.pro/blog-professionalnaya-gigiena.html</loc>
     <lastmod>2026-07-28</lastmod>
     <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://stomtech.pro/blog-aerozol.html</loc>
+    <lastmod>2026-07-29</lastmod>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://stomtech.pro/blog-oshibki.html</loc>
+    <lastmod>2026-07-27</lastmod>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://stomtech.pro/blog-recall-sistema.html</loc>
+    <lastmod>2026-07-25</lastmod>
+    <priority>0.7</priority>
   </url>
   <url>
     <loc>https://stomtech.pro/blog-air-flow.html</loc>

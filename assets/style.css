@@ -640,9 +640,21 @@ table.data td strong{color:var(--ink);font-weight:700}
 .blog-cover .i{position:absolute;right:20px;bottom:18px;--i-size:74px;color:#fff;opacity:.2;
   transition:transform var(--t-slow) var(--e-out),opacity var(--t-slow) linear}
 .blog-card:hover .blog-cover .i{transform:translateY(-4px) scale(1.06);opacity:.28}
-.blog-cover .tag{position:absolute;top:16px;left:16px;font-size:12px;font-weight:700;
+.blog-cover .tag{position:absolute;top:16px;left:16px;z-index:2;font-size:12px;font-weight:700;
   letter-spacing:.02em;background:rgba(255,255,255,.94);color:var(--ink);
   padding:6px 13px;border-radius:var(--r-pill);box-shadow:var(--sh-1)}
+/* отметка «материал для специалистов» */
+.blog-cover .pro-mark{position:absolute;top:16px;right:16px;z-index:2;
+  display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;
+  letter-spacing:.04em;text-transform:uppercase;color:#fff;
+  padding:6px 12px;border-radius:var(--r-pill);
+  background:rgba(15,25,34,.42);border:1px solid rgba(255,255,255,.28);
+  backdrop-filter:blur(8px)}
+.blog-cover .pro-mark .i{--i-size:14px}
+/* профессиональные материалы отличаются и по обложке — глубокий фон вместо светлого */
+.blog-card.is-pro .blog-cover::after{content:"";position:absolute;inset:0;
+  background:linear-gradient(160deg,rgba(15,25,34,.5),rgba(15,25,34,.15))}
+.blog-card.is-pro .blog-cover .i{z-index:1}
 .blog-body{padding:24px;flex:1;display:flex;flex-direction:column}
 .blog-body h3{font-size:19px;margin-bottom:10px;letter-spacing:-.025em;line-height:1.25}
 .blog-card:hover .blog-body h3{color:var(--blue-d)}
