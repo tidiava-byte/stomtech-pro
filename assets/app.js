@@ -36,7 +36,12 @@
     function reveal(el) {
       el.classList.add('is-in');
       setTimeout(function () {
-        if (parseFloat(getComputedStyle(el).opacity) < 0.9) {
+        var cs = getComputedStyle(el);
+        var hidden =
+          parseFloat(cs.opacity) < 0.9 ||
+          // вариант «шторка»: блок остаётся обрезанным, хотя непрозрачен
+          (el.dataset.reveal === 'clip' && cs.clipPath !== 'none' && cs.clipPath !== 'inset(0px)');
+        if (hidden) {
           el.style.opacity = '1';
           el.style.transform = 'none';
           el.style.clipPath = 'none';

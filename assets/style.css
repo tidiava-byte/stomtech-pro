@@ -107,7 +107,11 @@ body{
   overflow-x:hidden;
   font-feature-settings:'ss01','cv01','tnum' 0;
 }
-img,svg,video{max-width:100%;display:block}
+/* height:auto обязателен: атрибуты width/height в разметке нужны, чтобы браузер
+   заранее резервировал место, но если ширину потом задать через CSS, высота
+   останется из атрибута и картинка сплющится. Правила с явной высотой
+   (.hero-bottles, .prod-img, .pd-media) специфичнее и перекрывают это. */
+img,svg,video{max-width:100%;height:auto;display:block}
 a{color:inherit;text-decoration:none}
 button,input,select,textarea{font:inherit;color:inherit}
 button{cursor:pointer;border:none;background:none}
@@ -545,6 +549,24 @@ p{text-wrap:pretty}
 
 /* картинка без внутренних отступов + вариант «наезда» на предыдущую секцию */
 .split .media.plain{padding:0;background:transparent}
+
+/* витрина продукта для тёмных секций: студийное фото на белом фоне там смотрелось бы
+   белой плашкой, поэтому берём флакон с прозрачностью и подсвечиваем снизу */
+.showcase{position:relative;display:grid;place-items:center;overflow:hidden;
+  min-height:clamp(300px,32vw,420px);padding:36px;border-radius:var(--r-xl);
+  background:linear-gradient(160deg,rgba(255,255,255,.09),rgba(255,255,255,.02));
+  border:1px solid rgba(255,255,255,.1)}
+.showcase::before{content:"";position:absolute;width:72%;aspect-ratio:1;border-radius:50%;
+  background:radial-gradient(circle,rgba(0,136,205,.45),transparent 68%);filter:blur(34px)}
+.showcase::after{content:"";position:absolute;inset:0;pointer-events:none;
+  background-image:var(--noise);opacity:.08;mix-blend-mode:overlay}
+.showcase img{position:relative;z-index:1;max-height:clamp(240px,26vw,340px);width:auto;
+  filter:drop-shadow(0 28px 44px rgba(0,0,0,.55));animation:float-y 8s ease-in-out infinite}
+.showcase .cap{position:absolute;left:24px;bottom:22px;z-index:1;
+  display:inline-flex;align-items:center;gap:9px;padding:9px 16px;border-radius:var(--r-pill);
+  background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.14);
+  backdrop-filter:blur(10px);font-size:13.5px;font-weight:600;color:#fff}
+.showcase .cap .i{--i-size:17px;color:var(--blue-l)}
 .overlap{position:relative;z-index:10;margin-top:clamp(-64px,-5vw,-34px)}
 
 .check{display:grid;gap:14px}
