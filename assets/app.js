@@ -341,6 +341,10 @@
 
   /* --------------------------------------------------------- */
   function boot() {
+    // скрипт доехал — сторож из <head> больше не нужен
+    clearTimeout(window.__revealGuard);
+    document.documentElement.classList.remove('no-motion');
+
     initReveal();
     initHeader();
     initMenu();

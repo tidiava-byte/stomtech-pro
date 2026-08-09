@@ -18,9 +18,13 @@
 <link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
 <link rel="preload" href="assets/fonts/onest-cyrillic-700.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="assets/fonts/onest-cyrillic-400.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="assets/style.css">
-<link rel="stylesheet" href="assets/icons.css">
-<script>document.documentElement.classList.add('js')</script>
+<link rel="stylesheet" href="assets/style.css?v=47b66b02">
+<link rel="stylesheet" href="assets/icons.css?v=a039b63e">
+<script>/* Помечаем, что JS жив — только тогда прячем блоки под анимацию появления.
+Если app.js не доехал (кэш, блокировщик, ошибка), сторож через 2,5 с показывает всё как есть:
+пустой страницы не будет ни при каких обстоятельствах. */
+(function(h){h.classList.add('js');
+window.__revealGuard=setTimeout(function(){h.classList.add('no-motion')},2500)})(document.documentElement)</script>
 <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"Article","headline":"Профессиональная гигиена полости рта: как проходит и зачем нужна","description":"Как проходит профессиональная чистка зубов: этапы, инструменты, ощущения, противопоказания и периодичность. Разбор от производителя материалов для гигиены STOMTECH PRO.","datePublished":"2026-07-28","dateModified":"2026-07-28","inLanguage":"ru-RU","author":{"@type":"Organization","name":"Экспертная группа STOMTECH PRO"},"publisher":{"@type":"Organization","name":"STOMTECH PRO","url":"https://stomtech.pro/","logo":"https://stomtech.pro/assets/img/logo.svg","telephone":"+79307669988","email":"info@stomtech.pro","address":{"@type":"PostalAddress","addressLocality":"Курск","streetAddress":"ул. Соловьиная, зд. 51, офис 16","postalCode":"305022","addressCountry":"RU"}},"mainEntityOfPage":{"@type":"WebPage","@id":"https://stomtech.pro/blog-professionalnaya-gigiena.html"}},{"@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Больно ли делать профессиональную гигиену?","acceptedAnswer":{"@type":"Answer","text":"В большинстве случаев процедура ощущается как вибрация, прохлада и лёгкое давление. Дискомфорт возможен при воспалённых дёснах и оголённых шейках зубов. Современные протоколы позволяют работать мягче: порошки на основе эритритола с фракцией 14 мкм заметно комфортнее классической соды, а при необходимости применяется аппликационная анестезия."}},{"@type":"Question","name":"Сколько длится процедура?","acceptedAnswer":{"@type":"Answer","text":"Обычно от 40 до 70 минут в зависимости от объёма отложений, состояния дёсен и количества этапов. Первый визит после долгого перерыва занимает больше времени."}},{"@type":"Question","name":"Как часто нужно делать профессиональную чистку?","acceptedAnswer":{"@type":"Answer","text":"Стандартная рекомендация — раз в шесть месяцев. При брекетах, имплантах, курении или склонности к образованию камня интервал сокращают до трёх-четырёх месяцев. Периодичность определяет врач по итогам осмотра."}},{"@type":"Question","name":"Отбеливает ли профессиональная гигиена зубы?","acceptedAnswer":{"@type":"Answer","text":"Это не отбеливание. Процедура снимает налёт и пигментированные отложения, возвращая зубам их собственный оттенок. Он часто оказывается светлее, чем до чистки, но природный цвет эмали не меняется."}}]}]}</script>
 </head>
 <body>
@@ -295,6 +299,6 @@
 </footer>
 
 <a href="https://t.me/stomtechpro" class="fab" aria-label="Написать в Telegram" rel="noopener"><i class="i i-chat" aria-hidden="true"></i></a>
-<script src="assets/app.js"></script>
+<script src="assets/app.js?v=d571d114"></script>
 </body>
 </html>

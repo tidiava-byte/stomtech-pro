@@ -18,9 +18,13 @@
 <link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
 <link rel="preload" href="assets/fonts/onest-cyrillic-700.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="assets/fonts/onest-cyrillic-400.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="assets/style.css">
-<link rel="stylesheet" href="assets/icons.css">
-<script>document.documentElement.classList.add('js')</script>
+<link rel="stylesheet" href="assets/style.css?v=47b66b02">
+<link rel="stylesheet" href="assets/icons.css?v=a039b63e">
+<script>/* Помечаем, что JS жив — только тогда прячем блоки под анимацию появления.
+Если app.js не доехал (кэш, блокировщик, ошибка), сторож через 2,5 с показывает всё как есть:
+пустой страницы не будет ни при каких обстоятельствах. */
+(function(h){h.classList.add('js');
+window.__revealGuard=setTimeout(function(){h.classList.add('no-motion')},2500)})(document.documentElement)</script>
 <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"Article","headline":"Эритритол или сода: какой порошок выбрать","description":"Сравнение порошков на основе эритритола и бикарбоната натрия: абразивность, форма частиц, показания, ощущения пациента и расход. Практическое руководство по выбору фракции.","datePublished":"2026-07-14","dateModified":"2026-07-14","inLanguage":"ru-RU","author":{"@type":"Organization","name":"Экспертная группа STOMTECH PRO"},"publisher":{"@type":"Organization","name":"STOMTECH PRO","url":"https://stomtech.pro/","logo":"https://stomtech.pro/assets/img/logo.svg","telephone":"+79307669988","email":"info@stomtech.pro","address":{"@type":"PostalAddress","addressLocality":"Курск","streetAddress":"ул. Соловьиная, зд. 51, офис 16","postalCode":"305022","addressCountry":"RU"}},"mainEntityOfPage":{"@type":"WebPage","@id":"https://stomtech.pro/blog-eritritol-ili-soda.html"}},{"@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Что такое эритритол?","acceptedAnswer":{"@type":"Answer","text":"Эритритол — сахарный спирт, который применяется в пищевой промышленности как подсластитель. В стоматологии используется в виде порошка с округлыми частицами: он менее абразивен, чем бикарбонат натрия, имеет нейтральный сладковатый вкус и не создаёт солевой нагрузки."}},{"@type":"Question","name":"Почему эритритол дороже соды?","acceptedAnswer":{"@type":"Answer","text":"Разница в сырье и в технологии получения частиц заданного размера и формы. Порошок с фракцией 14 мкм требует более тонкого помола и контроля распределения частиц, чем содовый 40 мкм. В расчёте на процедуру разница меньше, чем в цене за флакон, поскольку расход мелкой фракции обычно ниже."}},{"@type":"Question","name":"Можно ли работать только содой?","acceptedAnswer":{"@type":"Answer","text":"Технически да, но набор показаний сузится: поддесневая обработка, работа вокруг имплантов и приём чувствительных пациентов содовым порошком не выполняются. Большинство клиник держат обе основы и выбирают под задачу."}},{"@type":"Question","name":"Какая фракция считается универсальной?","acceptedAnswer":{"@type":"Answer","text":"30 мкм на основе эритритола — компромисс между скоростью снятия налёта и комфортом. Такой порошок закрывает большую часть наддесневой работы на ежедневном приёме."}}]}]}</script>
 </head>
 <body>
@@ -277,6 +281,6 @@
 </footer>
 
 <a href="https://t.me/stomtechpro" class="fab" aria-label="Написать в Telegram" rel="noopener"><i class="i i-chat" aria-hidden="true"></i></a>
-<script src="assets/app.js"></script>
+<script src="assets/app.js?v=d571d114"></script>
 </body>
 </html>

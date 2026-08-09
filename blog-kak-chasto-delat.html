@@ -18,9 +18,13 @@
 <link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
 <link rel="preload" href="assets/fonts/onest-cyrillic-700.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="assets/fonts/onest-cyrillic-400.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="assets/style.css">
-<link rel="stylesheet" href="assets/icons.css">
-<script>document.documentElement.classList.add('js')</script>
+<link rel="stylesheet" href="assets/style.css?v=47b66b02">
+<link rel="stylesheet" href="assets/icons.css?v=a039b63e">
+<script>/* Помечаем, что JS жив — только тогда прячем блоки под анимацию появления.
+Если app.js не доехал (кэш, блокировщик, ошибка), сторож через 2,5 с показывает всё как есть:
+пустой страницы не будет ни при каких обстоятельствах. */
+(function(h){h.classList.add('js');
+window.__revealGuard=setTimeout(function(){h.classList.add('no-motion')},2500)})(document.documentElement)</script>
 <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"Article","headline":"Как часто делать профессиональную гигиену","description":"Как определить периодичность профессиональной гигиены полости рта: базовый интервал, факторы риска, отдельные рекомендации при брекетах, имплантах, пародонтите и курении.","datePublished":"2026-06-09","dateModified":"2026-06-09","inLanguage":"ru-RU","author":{"@type":"Organization","name":"Экспертная группа STOMTECH PRO"},"publisher":{"@type":"Organization","name":"STOMTECH PRO","url":"https://stomtech.pro/","logo":"https://stomtech.pro/assets/img/logo.svg","telephone":"+79307669988","email":"info@stomtech.pro","address":{"@type":"PostalAddress","addressLocality":"Курск","streetAddress":"ул. Соловьиная, зд. 51, офис 16","postalCode":"305022","addressCountry":"RU"}},"mainEntityOfPage":{"@type":"WebPage","@id":"https://stomtech.pro/blog-kak-chasto-delat.html"}},{"@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Достаточно ли делать чистку раз в год?","acceptedAnswer":{"@type":"Answer","text":"Для большинства взрослых — нет. За год мягкий налёт успевает минерализоваться, а объём отложений вырастает настолько, что процедура становится более длительной и менее комфортной. Базовая рекомендация — раз в шесть месяцев."}},{"@type":"Question","name":"Кому нужно приходить чаще?","acceptedAnswer":{"@type":"Answer","text":"Пациентам с брекетами и ретейнерами, с имплантами и обширными ортопедическими конструкциями, с диагностированным пародонтитом в стадии поддерживающей терапии, курящим, а также тем, у кого камень образуется быстро по индивидуальным причинам."}},{"@type":"Question","name":"Можно ли делать чистку во время беременности?","acceptedAnswer":{"@type":"Answer","text":"Профессиональная гигиена во время беременности обычно не противопоказана и часто рекомендуется из-за повышенного риска гингивита. Сроки, объём и метод определяет врач с учётом триместра и состояния."}}]}]}</script>
 </head>
 <body>
@@ -243,6 +247,6 @@
 </footer>
 
 <a href="https://t.me/stomtechpro" class="fab" aria-label="Написать в Telegram" rel="noopener"><i class="i i-chat" aria-hidden="true"></i></a>
-<script src="assets/app.js"></script>
+<script src="assets/app.js?v=d571d114"></script>
 </body>
 </html>

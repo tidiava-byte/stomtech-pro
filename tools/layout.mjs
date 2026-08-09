@@ -3,6 +3,19 @@
    Здесь живут: реквизиты, меню, шапка, подвал, <head>.
    Правка в одном месте расходится по всем страницам после `node tools/build.mjs`.
    ============================================================ */
+import { readFileSync } from 'node:fs';
+import { createHash } from 'node:crypto';
+import { join, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+/* Отпечаток содержимого файла в адресе ассета.
+   GitHub Pages отдаёт Cache-Control: max-age=600 — без этого вернувшийся посетитель
+   может получить новый HTML со старыми CSS/JS. Хэш меняется только вместе с файлом,
+   поэтому кэш не сбрасывается зря. */
+const ASSETS = join(dirname(fileURLToPath(import.meta.url)), '..', 'assets');
+const rev = (file) =>
+  createHash('sha1').update(readFileSync(join(ASSETS, file))).digest('hex').slice(0, 8);
+const V = { css: rev('style.css'), icons: rev('icons.css'), js: rev('app.js') };
 
 export const SITE = {
   name: 'STOMTECH PRO',
@@ -56,9 +69,13 @@ function head(m) {
 <link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
 <link rel="preload" href="assets/fonts/onest-cyrillic-700.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="assets/fonts/onest-cyrillic-400.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="assets/style.css">
-<link rel="stylesheet" href="assets/icons.css">
-<script>document.documentElement.classList.add('js')</script>${m.jsonld ? `\n<script type="application/ld+json">${JSON.stringify(m.jsonld)}</script>` : ''}`;
+<link rel="stylesheet" href="assets/style.css?v=${V.css}">
+<link rel="stylesheet" href="assets/icons.css?v=${V.icons}">
+<script>/* Помечаем, что JS жив — только тогда прячем блоки под анимацию появления.
+Если app.js не доехал (кэш, блокировщик, ошибка), сторож через 2,5 с показывает всё как есть:
+пустой страницы не будет ни при каких обстоятельствах. */
+(function(h){h.classList.add('js');
+window.__revealGuard=setTimeout(function(){h.classList.add('no-motion')},2500)})(document.documentElement)</script>${m.jsonld ? `\n<script type="application/ld+json">${JSON.stringify(m.jsonld)}</script>` : ''}`;
 }
 
 /* ---------- шапка ---------- */
@@ -144,7 +161,7 @@ ${body.trim()}
 ${footer()}
 
 <a href="${SITE.tg}" class="fab" aria-label="Написать в Telegram" rel="noopener"><i class="i i-chat" aria-hidden="true"></i></a>
-<script src="assets/app.js"></script>
+<script src="assets/app.js?v=${V.js}"></script>
 </body>
 </html>
 `;

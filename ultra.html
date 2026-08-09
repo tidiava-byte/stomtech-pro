@@ -18,9 +18,13 @@
 <link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
 <link rel="preload" href="assets/fonts/onest-cyrillic-700.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="assets/fonts/onest-cyrillic-400.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="assets/style.css">
-<link rel="stylesheet" href="assets/icons.css">
-<script>document.documentElement.classList.add('js')</script>
+<link rel="stylesheet" href="assets/style.css?v=47b66b02">
+<link rel="stylesheet" href="assets/icons.css?v=a039b63e">
+<script>/* Помечаем, что JS жив — только тогда прячем блоки под анимацию появления.
+Если app.js не доехал (кэш, блокировщик, ошибка), сторож через 2,5 с показывает всё как есть:
+пустой страницы не будет ни при каких обстоятельствах. */
+(function(h){h.classList.add('js');
+window.__revealGuard=setTimeout(function(){h.classList.add('no-motion')},2500)})(document.documentElement)</script>
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"Product","name":"STOMTECH PRO ULTRA 14 мкм","description":"Порошок для воздушно-абразивной обработки на основе эритритола, фракция 14 мкм. Для чувствительных пациентов, детского приёма и поддесневой обработки.","brand":{"@type":"Brand","name":"STOMTECH PRO"},"category":"Порошок для профессиональной гигиены полости рта","offers":{"@type":"Offer","price":"1990","priceCurrency":"RUB","availability":"https://schema.org/InStock","url":"https://stomtech.pro/ultra.html"}}</script>
 </head>
 <body>
@@ -171,6 +175,6 @@
 </footer>
 
 <a href="https://t.me/stomtechpro" class="fab" aria-label="Написать в Telegram" rel="noopener"><i class="i i-chat" aria-hidden="true"></i></a>
-<script src="assets/app.js"></script>
+<script src="assets/app.js?v=d571d114"></script>
 </body>
 </html>

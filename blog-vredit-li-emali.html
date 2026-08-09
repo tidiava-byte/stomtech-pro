@@ -18,9 +18,13 @@
 <link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
 <link rel="preload" href="assets/fonts/onest-cyrillic-700.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="assets/fonts/onest-cyrillic-400.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="assets/style.css">
-<link rel="stylesheet" href="assets/icons.css">
-<script>document.documentElement.classList.add('js')</script>
+<link rel="stylesheet" href="assets/style.css?v=47b66b02">
+<link rel="stylesheet" href="assets/icons.css?v=a039b63e">
+<script>/* Помечаем, что JS жив — только тогда прячем блоки под анимацию появления.
+Если app.js не доехал (кэш, блокировщик, ошибка), сторож через 2,5 с показывает всё как есть:
+пустой страницы не будет ни при каких обстоятельствах. */
+(function(h){h.classList.add('js');
+window.__revealGuard=setTimeout(function(){h.classList.add('no-motion')},2500)})(document.documentElement)</script>
 <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"Article","headline":"Вредит ли Air Flow эмали: разбор пяти мифов","description":"Стирает ли Air Flow эмаль, вызывает ли чувствительность, можно ли делать при винирах и имплантах. Разбор пяти распространённых мифов о воздушно-абразивной чистке зубов.","datePublished":"2026-06-16","dateModified":"2026-06-16","inLanguage":"ru-RU","author":{"@type":"Organization","name":"Экспертная группа STOMTECH PRO"},"publisher":{"@type":"Organization","name":"STOMTECH PRO","url":"https://stomtech.pro/","logo":"https://stomtech.pro/assets/img/logo.svg","telephone":"+79307669988","email":"info@stomtech.pro","address":{"@type":"PostalAddress","addressLocality":"Курск","streetAddress":"ул. Соловьиная, зд. 51, офис 16","postalCode":"305022","addressCountry":"RU"}},"mainEntityOfPage":{"@type":"WebPage","@id":"https://stomtech.pro/blog-vredit-li-emali.html"}},{"@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Стирает ли Air Flow эмаль?","acceptedAnswer":{"@type":"Answer","text":"Корректно выполненная воздушно-абразивная обработка не приводит к клинически значимой убыли эмали. Риск связан с неверным выбором абразива и режима: например, применением крупной содовой фракции там, где показана мелкая, или длительной задержкой струи в одной точке."}},{"@type":"Question","name":"Почему после чистки зубы становятся чувствительными?","acceptedAnswer":{"@type":"Answer","text":"Чаще всего это временная реакция на снятие налёта: обнажаются участки, которые были прикрыты отложениями. Проходит за несколько дней. Фторирование на финальном этапе заметно сокращает этот период."}},{"@type":"Question","name":"Можно ли делать процедуру при винирах и коронках?","acceptedAnswer":{"@type":"Answer","text":"Да, но с мелкой фракцией на основе эритритола. Крупный угловатый абразив способен нарушить полировку композита и керамики, поэтому его в этих зонах не применяют."}}]}]}</script>
 </head>
 <body>
@@ -254,6 +258,6 @@
 </footer>
 
 <a href="https://t.me/stomtechpro" class="fab" aria-label="Написать в Telegram" rel="noopener"><i class="i i-chat" aria-hidden="true"></i></a>
-<script src="assets/app.js"></script>
+<script src="assets/app.js?v=d571d114"></script>
 </body>
 </html>

@@ -18,9 +18,13 @@
 <link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
 <link rel="preload" href="assets/fonts/onest-cyrillic-700.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="assets/fonts/onest-cyrillic-400.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="assets/style.css">
-<link rel="stylesheet" href="assets/icons.css">
-<script>document.documentElement.classList.add('js')</script>
+<link rel="stylesheet" href="assets/style.css?v=47b66b02">
+<link rel="stylesheet" href="assets/icons.css?v=a039b63e">
+<script>/* Помечаем, что JS жив — только тогда прячем блоки под анимацию появления.
+Если app.js не доехал (кэш, блокировщик, ошибка), сторож через 2,5 с показывает всё как есть:
+пустой страницы не будет ни при каких обстоятельствах. */
+(function(h){h.classList.add('js');
+window.__revealGuard=setTimeout(function(){h.classList.add('no-motion')},2500)})(document.documentElement)</script>
 <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"Article","headline":"Каким порошком заправлять наконечник: NSK, EMS, KaVo, Woodpecker","description":"Как подобрать порошок под пескоструйный наконечник NSK Prophy-Mate, EMS AirFlow, KaVo PROPHYflex, Woodpecker. Что определяет совместимость, чем опасна неподходящая фракция и как ухаживать за наконечником.","datePublished":"2026-06-02","dateModified":"2026-06-02","inLanguage":"ru-RU","author":{"@type":"Organization","name":"Экспертная группа STOMTECH PRO"},"publisher":{"@type":"Organization","name":"STOMTECH PRO","url":"https://stomtech.pro/","logo":"https://stomtech.pro/assets/img/logo.svg","telephone":"+79307669988","email":"info@stomtech.pro","address":{"@type":"PostalAddress","addressLocality":"Курск","streetAddress":"ул. Соловьиная, зд. 51, офис 16","postalCode":"305022","addressCountry":"RU"}},"mainEntityOfPage":{"@type":"WebPage","@id":"https://stomtech.pro/blog-poroshok-dlya-nakonechnika.html"}},{"@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Обязательно ли использовать фирменный порошок производителя наконечника?","acceptedAnswer":{"@type":"Answer","text":"Технически совместимость определяется фракцией, сыпучестью и влагостойкостью порошка, а не брендом. При этом стоит учитывать условия гарантии на конкретное оборудование — некоторые производители ограничивают её при использовании сторонних расходников."}},{"@type":"Question","name":"Почему забивается наконечник?","acceptedAnswer":{"@type":"Answer","text":"Основные причины — влага в порошке, слишком крупная или неоднородная фракция и отсутствие продувки после работы. Порошки на основе эритритола с округлой частицей и стабильной фракцией забивают каналы реже угловатых содовых."}},{"@type":"Question","name":"Можно ли использовать один порошок на всех наконечниках в клинике?","acceptedAnswer":{"@type":"Answer","text":"Да, если фракция подходит всем используемым системам. Это удобно и логистически: одна номенклатура на закупку вместо нескольких."}}]}]}</script>
 </head>
 <body>
@@ -258,6 +262,6 @@
 </footer>
 
 <a href="https://t.me/stomtechpro" class="fab" aria-label="Написать в Telegram" rel="noopener"><i class="i i-chat" aria-hidden="true"></i></a>
-<script src="assets/app.js"></script>
+<script src="assets/app.js?v=d571d114"></script>
 </body>
 </html>
