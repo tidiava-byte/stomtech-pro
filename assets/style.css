@@ -476,6 +476,20 @@ p{text-wrap:pretty}
 .prod-card:hover .prod-link .i{transform:translateX(5px)}
 .prod-card:hover .prod-link .arr{transform:translateX(5px)}
 
+/* ======== 6.6.1 Форматы поставки ======== */
+.format-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+.format{display:flex;flex-direction:column;overflow:hidden;background:#fff;
+  border:1px solid var(--line);border-radius:var(--r-l);box-shadow:var(--sh-1);
+  transition:transform var(--t-mid) var(--e-out),box-shadow var(--t-mid) var(--e-out)}
+.format:hover{transform:translateY(-5px);box-shadow:var(--sh-3)}
+.format-img{display:grid;place-items:center;padding:22px;background:var(--mist2);
+  border-bottom:1px solid var(--line);min-height:250px}
+.format-img img{max-height:210px;width:100%;object-fit:contain}
+.format-body{padding:26px;flex:1;display:flex;flex-direction:column}
+.format-body h3{margin:12px 0 8px}
+.format-body p{font-size:15px;color:var(--gray);line-height:1.55;flex:1}
+.format-body .prod-tag{align-self:flex-start}
+
 /* ======== 6.7 Бенто-сетка преимуществ ======== */
 .bento{display:grid;grid-template-columns:repeat(6,1fr);gap:20px}
 .bento-cell{position:relative;overflow:hidden;isolation:isolate;
@@ -517,13 +531,31 @@ p{text-wrap:pretty}
 .steps{display:grid;grid-template-columns:repeat(4,1fr);gap:24px;counter-reset:s}
 .step{position:relative;padding-top:30px}
 .step::before{counter-increment:s;content:counter(s,decimal-leading-zero);
-  font-size:13px;font-weight:800;letter-spacing:.08em;color:var(--blue)}
-.step::after{content:"";position:absolute;left:0;right:0;top:8px;height:2px;
-  background:linear-gradient(90deg,var(--blue),rgba(0,136,205,.08))}
+  font-size:13px;font-weight:800;letter-spacing:.08em;color:var(--gray-l);
+  transition:color .4s var(--e-out) var(--sd,0ms)}
 .step h4{font-size:18px;margin:12px 0 8px}
 .step p{font-size:14.5px;color:var(--gray);line-height:1.5}
-.on-ink .step::after{background:linear-gradient(90deg,var(--blue-l),rgba(64,166,218,.1))}
 .on-ink .step p{color:#8FA0AF}
+
+/* дорожка над шагом: заливка пробегает по ней слева направо,
+   шаг за шагом — задержка задаётся из JS через --sd */
+.step .bar{position:absolute;left:0;right:0;top:8px;height:2px;display:block;
+  border-radius:2px;background:var(--line);overflow:hidden}
+.on-ink .step .bar{background:rgba(255,255,255,.14)}
+.step .bar::after{content:"";position:absolute;inset:0;border-radius:2px;
+  background:linear-gradient(90deg,var(--blue),var(--blue-l));
+  transform:scaleX(0);transform-origin:left}
+.js .steps.is-run .step .bar::after{animation:bar-run .6s var(--e-out) var(--sd,0ms) forwards}
+.js .steps.is-run .step::before{color:var(--blue)}
+/* без JS и при выключенной анимации дорожки просто залиты */
+.no-motion .step .bar::after,
+:root:not(.js) .step .bar::after{transform:scaleX(1)}
+:root:not(.js) .step::before,.no-motion .step::before{color:var(--blue)}
+@keyframes bar-run{to{transform:scaleX(1)}}
+@media (prefers-reduced-motion:reduce){
+  .step .bar::after{transform:scaleX(1) !important;animation:none !important}
+  .step::before{color:var(--blue) !important}
+}
 
 /* ======== 6.9 Бегущая строка совместимости ======== */
 .marquee{position:relative;overflow:hidden;
@@ -722,8 +754,23 @@ table.data td strong{color:var(--ink);font-weight:700}
   width:23px;height:23px;border-radius:50%;background:var(--blue-soft);color:var(--blue-d);
   font-size:12.5px;font-weight:700;display:grid;place-items:center}
 .article figure{margin-top:34px}
-.article figure img{border-radius:var(--r-m);box-shadow:var(--sh-2)}
+/* вертикальный кадр не должен занимать весь экран — ограничиваем высоту */
+.article figure img{width:100%;max-height:560px;object-fit:cover;
+  border-radius:var(--r-m);box-shadow:var(--sh-2)}
 .article figcaption{font-size:13.5px;color:var(--gray-l);margin-top:12px;text-align:center}
+
+/* заглушка на месте будущей фотографии: место в вёрстке уже занято,
+   поэтому при подстановке файла страница не «прыгает» */
+.fig-empty .fig-slot{display:grid;place-content:center;justify-items:center;gap:9px;
+  aspect-ratio:var(--ratio,16/9);padding:26px;text-align:center;
+  border:1.5px dashed #C9D8E4;border-radius:var(--r-m);
+  background:linear-gradient(160deg,var(--mist2),var(--blue-soft))}
+.fig-empty .fig-slot .i{--i-size:26px;color:var(--blue);opacity:.55}
+.fig-empty .fig-slot b{font-size:13px;font-weight:700;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--blue-d)}
+.fig-empty .fig-slot span{font-size:14.5px;color:var(--gray);max-width:46ch;line-height:1.45}
+.fig-empty .fig-slot code{font-size:12.5px;color:var(--gray-l);
+  background:rgba(255,255,255,.7);padding:3px 9px;border-radius:6px}
 .article blockquote{position:relative;margin-top:34px;padding:26px 30px;
   background:var(--mist2);border-left:3px solid var(--blue);border-radius:0 var(--r-m) var(--r-m) 0;
   font-size:18px;line-height:1.6;color:var(--ink)}

@@ -66,7 +66,9 @@ function head(m) {
 <meta property="og:title" content="${og}">
 <meta property="og:description" content="${m.ogDescription || m.description}">
 <meta property="og:url" content="${canonical}">
-<link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="assets/img/favicon.svg?v=2" type="image/svg+xml">
+<link rel="icon" href="assets/img/favicon-32.png?v=2" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png?v=2">
 <link rel="preload" href="assets/fonts/onest-cyrillic-700.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="assets/fonts/onest-cyrillic-400.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="assets/style.css?v=${V.css}">

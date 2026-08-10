@@ -225,6 +225,31 @@
   }
 
   /* ---------------------------------------------------------
+     Шаги: дорожки заполняются по очереди, одна за другой
+     --------------------------------------------------------- */
+  function initSteps() {
+    var groups = $$('.steps');
+    if (!groups.length) return;
+
+    groups.forEach(function (g) {
+      $$('.step', g).forEach(function (s, i) { s.style.setProperty('--sd', i * 420 + 'ms'); });
+    });
+
+    if (reduced || !('IntersectionObserver' in window)) {
+      groups.forEach(function (g) { g.classList.add('is-run'); });
+      return;
+    }
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (!e.isIntersecting) return;
+        e.target.classList.add('is-run');
+        io.unobserve(e.target);
+      });
+    }, { threshold: 0.25 });
+    groups.forEach(function (g) { io.observe(g); });
+  }
+
+  /* ---------------------------------------------------------
      Бегущая строка: дублируем содержимое для бесшовной петли
      --------------------------------------------------------- */
   function initMarquee() {
@@ -382,6 +407,7 @@
     initCounters();
     initSpotlight();
     initHeroParallax();
+    initSteps();
     initMarquee();
     initArticle();
     initBlogFilter();

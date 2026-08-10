@@ -12,7 +12,7 @@
 
    Правила: HTML в корне — результат сборки, руками его не редактируем.
    ============================================================ */
-import { readdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { readdirSync, readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { SITE, AUTHORS, page, ctaBand } from './layout.mjs';
@@ -123,8 +123,39 @@ function related(slug, n = 3) {
      <!-- @related -->                    похожие статьи
      <!-- @share --> <!-- @author -->     блок «поделиться» и карточка автора
 ------------------------------------------------------------------ */
+/* Список мест под фотографии, которые ещё не сняты — собирается при сборке
+   и выводится в конце, чтобы было видно, что осталось подготовить. */
+const missingPhotos = [];
+
+/* <!-- @figure {"src":"...","alt":"...","caption":"...","brief":"..."} -->
+   Если файл assets/img/blog/<src> существует — вставляется фотография.
+   Если нет — на его месте стоит заглушка с описанием нужного кадра и именем файла.
+   Разметка и место в тексте при этом не меняются: положили файл, пересобрали — готово. */
+function figure(arg) {
+  const f = JSON.parse(arg);
+  const rel = `assets/img/blog/${f.src}`;
+  const ratio = f.ratio || '16 / 9';
+  if (existsSync(join(ROOT, rel))) {
+    return `<figure class="fig">
+            <img src="${rel}" alt="${f.alt}" loading="lazy" style="aspect-ratio:${ratio};object-fit:cover">
+            ${f.caption ? `<figcaption>${f.caption}</figcaption>` : ''}
+          </figure>`;
+  }
+  missingPhotos.push({ src: f.src, brief: f.brief || f.alt });
+  return `<figure class="fig fig-empty" style="--ratio:${ratio}">
+            <div class="fig-slot">
+              <i class="i i-microscope" aria-hidden="true"></i>
+              <b>Место под фотографию</b>
+              <span>${f.brief || f.alt}</span>
+              <code>${f.src}</code>
+            </div>
+            ${f.caption ? `<figcaption>${f.caption}</figcaption>` : ''}
+          </figure>`;
+}
+
 const DIRECTIVES = {
   cta: (arg) => ctaBand(arg ? JSON.parse(arg) : undefined),
+  figure,
   blogCards: (arg) => posts.slice(0, parseInt(arg, 10) || 3).map((p) => postCard(p)).join('\n      '),
   blogIndex: () => blogIndex(),
   related: (arg, meta) => related(meta.slug),
@@ -235,3 +266,19 @@ ${urls.map((u) => `  <url>
 );
 
 console.log(`Собрано страниц: ${count} (из них статей блога: ${posts.length}). sitemap.xml обновлён.`);
+
+/* Памятка по недостающим фотографиям — она же техзадание на съёмку/генерацию */
+if (missingPhotos.length) {
+  const uniq = [...new Map(missingPhotos.map((p) => [p.src, p])).values()];
+  writeFileSync(
+    join(ROOT, 'tools', 'PHOTO-TODO.md'),
+    `# Нужные фотографии для статей\n\n` +
+      `Кладите файлы в \`site/assets/img/blog/\` под указанными именами и запускайте \`node tools/build.mjs\` —\n` +
+      `заглушки заменятся автоматически, разметку править не нужно.\n\n` +
+      `Формат: WebP, ширина 1200–1600 px, соотношение 16:9 (если в статье не указано иное).\n\n` +
+      uniq.map((p) => `- [ ] \`${p.src}\` — ${p.brief}`).join('\n') +
+      '\n',
+    'utf8'
+  );
+  console.log(`Ждут фотографии: ${uniq.length} шт. Список — tools/PHOTO-TODO.md`);
+}
