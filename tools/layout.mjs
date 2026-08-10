@@ -3,7 +3,7 @@
    Здесь живут: реквизиты, меню, шапка, подвал, <head>.
    Правка в одном месте расходится по всем страницам после `node tools/build.mjs`.
    ============================================================ */
-import { readFileSync } from 'node:fs';
+import { readFileSync, existsSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -16,6 +16,12 @@ const ASSETS = join(dirname(fileURLToPath(import.meta.url)), '..', 'assets');
 const rev = (file) =>
   createHash('sha1').update(readFileSync(join(ASSETS, file))).digest('hex').slice(0, 8);
 const V = { css: rev('style.css'), icons: rev('icons.css'), js: rev('app.js') };
+
+/* Картинка-превью для мессенджеров и соцсетей. Появится в <head> сама, как только
+   файл assets/img/og-cover.jpg будет положен на место (промпт — в PHOTO-PROMPTS.md).
+   Пока файла нет, теги не выводятся: пустой og:image хуже, чем его отсутствие. */
+const OG_FILE = 'og-cover.jpg';
+const HAS_OG = existsSync(join(ASSETS, 'img', OG_FILE));
 
 export const SITE = {
   name: 'STOMTECH PRO',
@@ -65,7 +71,11 @@ function head(m) {
 <meta property="og:locale" content="ru_RU">
 <meta property="og:title" content="${og}">
 <meta property="og:description" content="${m.ogDescription || m.description}">
-<meta property="og:url" content="${canonical}">
+<meta property="og:url" content="${canonical}">${HAS_OG ? `
+<meta property="og:image" content="${SITE.origin}/assets/img/${OG_FILE}">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">` : ''}
 <link rel="icon" href="assets/img/favicon.svg?v=2" type="image/svg+xml">
 <link rel="icon" href="assets/img/favicon-32.png?v=2" sizes="32x32" type="image/png">
 <link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png?v=2">
