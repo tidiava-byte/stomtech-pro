@@ -482,9 +482,12 @@ p{text-wrap:pretty}
   border:1px solid var(--line);border-radius:var(--r-l);box-shadow:var(--sh-1);
   transition:transform var(--t-mid) var(--e-out),box-shadow var(--t-mid) var(--e-out)}
 .format:hover{transform:translateY(-5px);box-shadow:var(--sh-3)}
-.format-img{display:grid;place-items:center;padding:22px;background:var(--mist2);
-  border-bottom:1px solid var(--line);min-height:250px}
-.format-img img{max-height:210px;width:100%;object-fit:contain}
+/* высота полосы с изображением фиксирована, иначе карточки разъезжаются
+   по вертикали: у флакона, коробки и стиков разные пропорции.
+   flex, а не grid — в grid-области процентная высота картинки неразрешима */
+.format-img{display:flex;align-items:center;justify-content:center;
+  height:270px;padding:26px;background:var(--mist2);border-bottom:1px solid var(--line)}
+.format-img img{max-width:100%;max-height:100%;width:auto;height:auto;object-fit:contain}
 .format-body{padding:26px;flex:1;display:flex;flex-direction:column}
 .format-body h3{margin:12px 0 8px}
 .format-body p{font-size:15px;color:var(--gray);line-height:1.55;flex:1}
