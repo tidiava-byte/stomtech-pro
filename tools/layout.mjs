@@ -33,7 +33,7 @@ const CATALOG = JSON.parse(readFileSync(join(ASSETS, '..', 'tools', 'products.js
    разрешённых доменов там же. Секретный ключ стандартизации сюда класть нельзя.
    Пока строка пуста, подстановка реквизитов просто не включается: поля заполняются
    руками, форма работает как обычно. */
-const DADATA_TOKEN = '';
+const DADATA_TOKEN = 'f80e44d20b652ea5c5d403cdf01308414f77b34e';
 
 const cartData = () => `<script>window.__PRODUCTS=${JSON.stringify(
   CATALOG.items.map((p) => ({ sku: p.sku, title: p.title, price: p.price, weight: p.weight }))
