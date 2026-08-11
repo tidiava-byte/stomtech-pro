@@ -2,3 +2,6 @@ Thumbs.db
 .DS_Store
 server.js
 tunnel.log
+
+# доступы к хостингу — только локально
+tools/.deploy.env
