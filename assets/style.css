@@ -103,6 +103,23 @@
    с display:flex или display:grid останется видимым, сколько его ни прячь. */
 [hidden]{display:none!important}
 html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+
+/* Полоса прокрутки. Стандартный Firefox-синтаксис плюс вебкитовский:
+   первый работает в Firefox, второй — в Chrome, Safari и Edge. */
+html{scrollbar-width:thin;scrollbar-color:#C3D3DF transparent}
+::-webkit-scrollbar{width:11px;height:11px}
+/* стрелки на концах полосы — рудимент, убираем */
+::-webkit-scrollbar-button{display:none;width:0;height:0}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:#C9D7E2;border-radius:99px;
+  /* прозрачная рамка через background-clip даёт «воздух» вокруг ползунка */
+  border:3px solid transparent;background-clip:content-box}
+::-webkit-scrollbar-thumb:hover{background:#9FB4C4;background-clip:content-box}
+::-webkit-scrollbar-thumb:active{background:var(--blue);background-clip:content-box}
+::-webkit-scrollbar-corner{background:transparent}
+/* На тёмных секциях и внутри тёмных карточек ползунок светлый */
+.on-ink ::-webkit-scrollbar-thumb{background:rgba(255,255,255,.28);background-clip:content-box}
+.on-ink ::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,.45);background-clip:content-box}
 body{
   font-family:Onest,-apple-system,'Segoe UI',Arial,sans-serif;
   color:var(--ink2);background:var(--paper);
@@ -990,7 +1007,26 @@ table.data td strong{color:var(--ink);font-weight:700}
    Ссылку «Подробнее» растягиваем на всю карточку, кнопку поднимаем над ней. */
 .prod-link{position:relative}
 .prod-link::after{content:"";position:absolute;inset:-30px -28px -28px;border-radius:inherit}
-.prod-card .prod-add{position:relative;z-index:1;width:100%;margin-top:18px}
+/* Блок покупки: кнопка превращается в счётчик, как только товар оказался в корзине.
+   Цвет наследуется от продукта — бирюзовый ULTRA, голубой DELICATE, красный HARD. */
+.buy{position:relative;z-index:1;margin-top:18px}
+.buy[data-accent="ultra"]{--buy:var(--ultra);--buy-soft:#DEF3F2}
+.buy[data-accent="delicate"]{--buy:var(--delicate);--buy-soft:#E1F1FA}
+.buy[data-accent="hard"]{--buy:var(--hard);--buy-soft:#FCE4E4}
+.btn-buy{width:100%;background:var(--buy);color:#fff;box-shadow:0 8px 20px -10px var(--buy)}
+.btn-buy:hover{filter:brightness(.93);box-shadow:0 12px 26px -10px var(--buy)}
+
+.buy-qty{display:grid;grid-template-columns:44px 1fr 44px;align-items:center;
+  height:44px;border-radius:var(--r-pill);background:var(--buy-soft);
+  border:1px solid color-mix(in srgb,var(--buy) 22%,transparent)}
+.buy-lg .buy-qty{height:54px;grid-template-columns:54px 1fr 54px}
+.buy-qty > span{text-align:center;font-weight:700;font-size:17px;color:var(--ink);
+  font-variant-numeric:tabular-nums}
+.buy-qty button{display:grid;place-items:center;height:100%;color:var(--buy);border-radius:var(--r-pill);
+  transition:background-color var(--t-fast) linear,transform var(--t-fast) var(--e-out)}
+.buy-qty button .i{--i-size:18px}
+.buy-qty button:hover{background:color-mix(in srgb,var(--buy) 14%,transparent)}
+.buy-qty button:active{transform:scale(.9)}
 
 /* Кнопка корзины в шапке. Появляется, только когда в корзине что-то есть —
    пустая корзина в шапке ничего не сообщает и лишь занимает место. */
@@ -1005,6 +1041,9 @@ table.data td strong{color:var(--ink);font-weight:700}
   box-shadow:0 0 0 2px #fff;font-variant-numeric:tabular-nums}
 
 /* Строки корзины внутри формы заказа */
+.inn-status{margin-top:-6px;padding:2px 0 2px 2px}
+.inn-status.is-ok{color:var(--green)}
+.inn-status.is-warn{color:var(--coral-d)}
 .cart-name{display:flex;flex-direction:column;gap:2px;font-weight:600;font-size:15px}
 .cart-name small{font-weight:400;font-size:13px;color:var(--gray-l)}
 .cart-empty{padding:16px 0 4px}

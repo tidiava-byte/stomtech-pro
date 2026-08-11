@@ -27,9 +27,17 @@ const HAS_OG = existsSync(join(ASSETS, 'img', OG_FILE));
    витрина и корзина обязаны считать по одному прайсу. В браузер уходит только
    необходимое: артикул, название, цена, фасовка. */
 const CATALOG = JSON.parse(readFileSync(join(ASSETS, '..', 'tools', 'products.json'), 'utf8'));
+
+/* Ключ DaData для подсказок по ИНН. Это отдельный «ключ для подсказок» из личного
+   кабинета DaData — он рассчитан на работу в браузере и ограничивается списком
+   разрешённых доменов там же. Секретный ключ стандартизации сюда класть нельзя.
+   Пока строка пуста, подстановка реквизитов просто не включается: поля заполняются
+   руками, форма работает как обычно. */
+const DADATA_TOKEN = '';
+
 const cartData = () => `<script>window.__PRODUCTS=${JSON.stringify(
   CATALOG.items.map((p) => ({ sku: p.sku, title: p.title, price: p.price, weight: p.weight }))
-)}</script>`;
+)};window.__DADATA=${JSON.stringify(DADATA_TOKEN)}</script>`;
 
 /* Яндекс.Метрика. Номер счётчика — в одном месте: меняется здесь, попадает на все страницы.
    Пустая строка полностью убирает счётчик из сборки (например, для локального просмотра).
@@ -61,8 +69,10 @@ export const SITE = {
   phoneHref: 'tel:+79307669988',
   email: 'info@stomtech.pro',
   tg: 'https://t.me/stomtechpro',
-  wa: 'https://wa.me/79307669988',
   vk: 'https://vk.com/stomtech_pro',
+  // WhatsApp убран с сайта 2026-08-11 решением заказчика: мессенджер Meta,
+  // как канал связи в материалах медизделия не используем. Если понадобится вернуть —
+  // добавить сюда `wa`, иконку в gen-icons.mjs и ссылки в подвале, контактах и share.
   // Ссылка на розницу для физлиц. Показывается ТОЛЬКО в форме заказа, с rel=nofollow:
   // закупщик клиники, увидевший розничную цену, начнёт сравнивать её с оптовой.
   // Пока пусто — строка про Wildberries не выводится.
@@ -139,7 +149,7 @@ ${links}
     </nav>
     <div class="nav-cta">
       <a href="${SITE.phoneHref}" class="nav-phone"><i class="i i-phone" aria-hidden="true"></i>${SITE.phone}</a>
-      <a href="zakaz.html" class="cart-btn" data-order hidden aria-label="Корзина"><i class="i i-box" aria-hidden="true"></i><span class="cart-count" data-cart-count>0</span></a>
+      <a href="zakaz.html" class="cart-btn" data-order hidden aria-label="Корзина"><i class="i i-cart" aria-hidden="true"></i><span class="cart-count" data-cart-count>0</span></a>
       <a href="zakaz.html" class="btn btn-primary btn-sm" data-order>Сделать заказ</a>
       <button class="burger" type="button" aria-label="Открыть меню"><span></span><span></span><span></span></button>
     </div>
@@ -157,7 +167,6 @@ function footer() {
         <p>Профессиональные порошки для воздушно-абразивной чистки зубов. Российское производство полного цикла.</p>
         <div class="foot-social">
           <a href="${SITE.tg}" aria-label="Telegram" rel="noopener"><i class="i i-telegram" aria-hidden="true"></i></a>
-          <a href="${SITE.wa}" aria-label="WhatsApp" rel="noopener"><i class="i i-whatsapp" aria-hidden="true"></i></a>
           <a href="${SITE.vk}" aria-label="ВКонтакте" rel="noopener"><i class="i i-vk" aria-hidden="true"></i></a>
         </div>
       </div>
@@ -224,9 +233,13 @@ export function orderForm(p) {
       <input type="hidden" name="total" data-label="Сумма заказа" value="">
 
       <div class="field-row" style="margin-top:22px">
-        <div class="field"><label for="${p}-inn">ИНН *</label><input id="${p}-inn" type="text" name="inn" data-label="ИНН" required inputmode="numeric" pattern="[0-9]{10}|[0-9]{12}" placeholder="10 или 12 цифр"></div>
-        <div class="field"><label for="${p}-org">Организация или ИП *</label><input id="${p}-org" type="text" name="org" data-label="Организация" required autocomplete="organization" placeholder="Название и город"></div>
+        <div class="field"><label for="${p}-inn">ИНН *</label><input id="${p}-inn" type="text" name="inn" data-label="ИНН" data-inn required inputmode="numeric" pattern="[0-9]{10}|[0-9]{12}" placeholder="10 или 12 цифр" autocomplete="off"></div>
+        <div class="field"><label for="${p}-org">Организация или ИП *</label><input id="${p}-org" type="text" name="org" data-label="Организация" data-org required autocomplete="organization" placeholder="Подставится по ИНН"></div>
       </div>
+      <p class="note inn-status" data-inn-status hidden></p>
+      <input type="hidden" name="kpp" data-label="КПП" data-kpp value="">
+      <input type="hidden" name="ogrn" data-label="ОГРН" data-ogrn value="">
+      <input type="hidden" name="legalAddress" data-label="Юридический адрес" data-legal-address value="">
       <div class="field"><label for="${p}-name">Имя *</label><input id="${p}-name" type="text" name="name" data-label="Имя" required autocomplete="name" placeholder="Как к вам обращаться"></div>
       <div class="field-row">
         <div class="field"><label for="${p}-phone">Телефон *</label><input id="${p}-phone" type="tel" name="phone" data-label="Телефон" required autocomplete="tel" placeholder="+7 (___) ___-__-__"></div>

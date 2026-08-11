@@ -135,7 +135,14 @@
           <div class="prod-price">{{price:ULTRA-170}} <small>/ {{weight:ULTRA-170}} г</small></div>
           <a href="ultra.html" class="prod-link">Подробнее <i class="i i-arrow-right" aria-hidden="true"></i></a>
         </div>
-        <button type="button" class="btn btn-primary btn-sm prod-add" data-add="ULTRA-170">В корзину</button>
+        <div class="buy" data-buy="ULTRA-170" data-accent="ultra">
+          <button type="button" class="btn btn-buy btn-sm" data-add="ULTRA-170">В корзину</button>
+          <div class="buy-qty" hidden>
+            <button type="button" data-step="-" aria-label="Убрать одну упаковку"><i class="i i-minus" aria-hidden="true"></i></button>
+            <span data-buy-qty>0</span>
+            <button type="button" data-step="+" aria-label="Добавить одну упаковку"><i class="i i-plus" aria-hidden="true"></i></button>
+          </div>
+        </div>
       </div>
 
       <div class="prod-card delicate" data-reveal="rise">
@@ -149,7 +156,14 @@
           <div class="prod-price">{{price:DELICATE-170}} <small>/ {{weight:DELICATE-170}} г</small></div>
           <a href="delicate.html" class="prod-link">Подробнее <i class="i i-arrow-right" aria-hidden="true"></i></a>
         </div>
-        <button type="button" class="btn btn-primary btn-sm prod-add" data-add="DELICATE-170">В корзину</button>
+        <div class="buy" data-buy="DELICATE-170" data-accent="delicate">
+          <button type="button" class="btn btn-buy btn-sm" data-add="DELICATE-170">В корзину</button>
+          <div class="buy-qty" hidden>
+            <button type="button" data-step="-" aria-label="Убрать одну упаковку"><i class="i i-minus" aria-hidden="true"></i></button>
+            <span data-buy-qty>0</span>
+            <button type="button" data-step="+" aria-label="Добавить одну упаковку"><i class="i i-plus" aria-hidden="true"></i></button>
+          </div>
+        </div>
       </div>
 
       <div class="prod-card hard" data-reveal="rise">
@@ -163,7 +177,14 @@
           <div class="prod-price">{{price:HARD-300}} <small>/ {{weight:HARD-300}} г</small></div>
           <a href="hard.html" class="prod-link">Подробнее <i class="i i-arrow-right" aria-hidden="true"></i></a>
         </div>
-        <button type="button" class="btn btn-primary btn-sm prod-add" data-add="HARD-300">В корзину</button>
+        <div class="buy" data-buy="HARD-300" data-accent="hard">
+          <button type="button" class="btn btn-buy btn-sm" data-add="HARD-300">В корзину</button>
+          <div class="buy-qty" hidden>
+            <button type="button" data-step="-" aria-label="Убрать одну упаковку"><i class="i i-minus" aria-hidden="true"></i></button>
+            <span data-buy-qty>0</span>
+            <button type="button" data-step="+" aria-label="Добавить одну упаковку"><i class="i i-plus" aria-hidden="true"></i></button>
+          </div>
+        </div>
       </div>
 
     </div>

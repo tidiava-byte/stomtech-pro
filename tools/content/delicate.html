@@ -44,7 +44,14 @@
         <p class="lead mt-s">Универсальная фракция для ежедневного приёма. Снимает налёт и биоплёнку, не требуя отдельного этапа полировки. Совместим с большинством стандартных наконечников.</p>
         <div class="pd-price">{{price:DELICATE-170}} <small>/ флакон {{weight:DELICATE-170}} г · {{perGram:DELICATE-170}} ₽ за грамм</small></div>
         <div class="hero-cta" style="justify-content:flex-start;margin-top:26px">
-          <button type="button" class="btn btn-primary btn-lg" data-add="DELICATE-170">В корзину <i class="i i-arrow-right" aria-hidden="true"></i></button>
+          <div class="buy buy-lg" data-buy="DELICATE-170" data-accent="delicate">
+          <button type="button" class="btn btn-buy btn-lg" data-add="DELICATE-170">В корзину</button>
+          <div class="buy-qty" hidden>
+            <button type="button" data-step="-" aria-label="Убрать одну упаковку"><i class="i i-minus" aria-hidden="true"></i></button>
+            <span data-buy-qty>0</span>
+            <button type="button" data-step="+" aria-label="Добавить одну упаковку"><i class="i i-plus" aria-hidden="true"></i></button>
+          </div>
+        </div>
           <a href="sovmestimost.html" class="btn btn-ghost btn-lg">Проверить совместимость</a>
         </div>
         <div class="spec-list">

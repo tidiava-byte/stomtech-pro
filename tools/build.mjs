@@ -237,7 +237,6 @@ const DIRECTIVES = {
     return `<div class="share">
         <span>Поделиться</span>
         <a href="https://t.me/share/url?url=${encodeURIComponent(url)}" aria-label="Telegram" rel="noopener nofollow"><i class="i i-telegram" aria-hidden="true"></i></a>
-        <a href="https://api.whatsapp.com/send?text=${encodeURIComponent(url)}" aria-label="WhatsApp" rel="noopener nofollow"><i class="i i-whatsapp" aria-hidden="true"></i></a>
         <a href="https://vk.com/share.php?url=${encodeURIComponent(url)}" aria-label="ВКонтакте" rel="noopener nofollow"><i class="i i-vk" aria-hidden="true"></i></a>
       </div>`;
   },

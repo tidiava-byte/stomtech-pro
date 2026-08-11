@@ -417,6 +417,16 @@
       }).join('');
     });
 
+    // блоки покупки под товарами: кнопка или счётчик
+    $$('[data-buy]').forEach(function (box) {
+      var n = cart[box.getAttribute('data-buy')] || 0;
+      var btn = $('.btn-buy', box), qty = $('.buy-qty', box);
+      if (btn) btn.hidden = n > 0;
+      if (qty) qty.hidden = n === 0;
+      var out = $('[data-buy-qty]', box);
+      if (out) out.textContent = n;
+    });
+
     $$('[data-cart-empty]').forEach(function (el) { el.hidden = count > 0; });
     $$('[data-cart-total]').forEach(function (el) { el.hidden = count === 0; });
     $$('[data-cart-sum]').forEach(function (el) { el.textContent = rub(sum); });
@@ -439,6 +449,17 @@
       });
     });
 
+    // плюс-минус в блоке покупки под товаром
+    $$('[data-buy]').forEach(function (box) {
+      var sku = box.getAttribute('data-buy');
+      $$('button[data-step]', box).forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          var cart = cartRead();
+          cartSet(sku, (cart[sku] || 0) + (btn.dataset.step === '+' ? 1 : -1));
+        });
+      });
+    });
+
     // плюс-минус внутри строк корзины (строки перерисовываются, поэтому слушаем на форме)
     $$('[data-cart-lines]').forEach(function (box) {
       box.addEventListener('click', function (e) {
@@ -456,6 +477,91 @@
     window.addEventListener('storage', function (e) { if (e.key === CART_KEY) cartRender(); });
 
     cartRender();
+  }
+
+  /* ---------------------------------------------------------
+     Реквизиты по ИНН (DaData)
+
+     Главное трение B2B-заказа — вручную набивать название, КПП, ОГРН и юрадрес.
+     Вводится только ИНН, остальное подставляется. Запрос уходит прямо из браузера:
+     это ключ подсказок DaData, он для того и предназначен и ограничен доменом
+     в личном кабинете. Секретный ключ стандартизации сюда класть нельзя.
+
+     Если ключа нет, поля просто заполняются руками — форма работает как раньше.
+     --------------------------------------------------------- */
+  function initInn() {
+    var token = window.__DADATA;
+    if (!token) return;
+
+    var URL_ = 'https://suggestions.dadata.ru/suggestions/api/4_1/rs/findById/party';
+    var cache = {};
+
+    $$('[data-inn]').forEach(function (input) {
+      var form = input.form;
+      if (!form) return;
+      var status = $('[data-inn-status]', form);
+      var timer;
+
+      function say(text, kind) {
+        if (!status) return;
+        status.textContent = text || '';
+        status.hidden = !text;
+        status.className = 'note inn-status' + (kind ? ' is-' + kind : '');
+      }
+
+      function fill(party) {
+        var d = party.data || {};
+        var set = function (sel, value) {
+          var el = $(sel, form);
+          if (el) el.value = value || '';
+        };
+        set('[data-org]', party.value);
+        set('[data-kpp]', d.kpp);
+        set('[data-ogrn]', d.ogrn);
+        set('[data-legal-address]', d.address && d.address.value);
+        var liquidated = d.state && d.state.status && d.state.status !== 'ACTIVE';
+        say(liquidated
+          ? 'Организация найдена, но по данным реестра не действует. Проверьте ИНН.'
+          : 'Реквизиты подставлены: ' + (d.kpp ? 'КПП ' + d.kpp + ', ' : '') + 'ОГРН ' + (d.ogrn || '—'),
+          liquidated ? 'warn' : 'ok');
+      }
+
+      function lookup(inn) {
+        if (cache[inn]) { fill(cache[inn]); return; }
+        say('Ищем в реестре…');
+        fetch(URL_, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
+            Authorization: 'Token ' + token,
+          },
+          body: JSON.stringify({ query: inn, count: 1 }),
+        })
+          .then(function (r) { return r.ok ? r.json() : Promise.reject(r.status); })
+          .then(function (data) {
+            var party = data && data.suggestions && data.suggestions[0];
+            if (!party) { say('По этому ИНН ничего не нашлось — заполните название вручную.', 'warn'); return; }
+            cache[inn] = party;
+            fill(party);
+          })
+          // Сеть или лимит запросов. Заказ важнее подсказки: молча отпускаем
+          // человека заполнять поля руками, ошибку не показываем как проблему.
+          .catch(function () { say('Не удалось получить реквизиты — заполните название вручную.', 'warn'); });
+      }
+
+      function check() {
+        var inn = input.value.replace(/\D/g, '');
+        if (inn.length !== 10 && inn.length !== 12) { say(''); return; }
+        lookup(inn);
+      }
+
+      input.addEventListener('input', function () {
+        clearTimeout(timer);
+        timer = setTimeout(check, 400);
+      });
+      input.addEventListener('blur', check);
+    });
   }
 
   /* ---------------------------------------------------------
@@ -573,6 +679,7 @@
     initBlogFilter();
     initFab();
     initCart();
+    initInn();
     initOrderModal();
     initForms();
     var y = document.getElementById('year');
