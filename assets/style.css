@@ -1002,6 +1002,26 @@ table.data td strong{color:var(--ink);font-weight:700}
   opacity:0;transition:opacity .3s linear,transform .45s var(--e-out)}
 .toast.show{opacity:1;transform:translate(-50%,0)}
 
+/* ======== 6.17.1 Полоса про cookie ======== */
+/* Не перекрывает контент и не блокирует сайт: в России достаточно уведомить.
+   Появляется снизу, после закрытия больше не показывается. */
+.cookie-bar{position:fixed;left:16px;right:16px;bottom:16px;z-index:190;
+  display:flex;align-items:center;gap:18px;flex-wrap:wrap;justify-content:space-between;
+  max-width:760px;margin-inline:auto;padding:16px 20px;
+  background:rgba(255,255,255,.97);backdrop-filter:blur(14px);
+  border:1px solid var(--line);border-radius:var(--r-m);box-shadow:var(--sh-4);
+  transform:translateY(140%);opacity:0;
+  transition:transform .55s var(--e-out),opacity .35s linear}
+.cookie-bar.show{transform:none;opacity:1}
+.cookie-bar p{font-size:14px;color:var(--gray);line-height:1.5;flex:1 1 320px;margin:0}
+.cookie-bar .btn{flex:0 0 auto}
+@media (max-width:600px){
+  .cookie-bar{left:12px;right:12px;bottom:12px;padding:16px}
+  .cookie-bar .btn{width:100%}
+}
+/* плавающая кнопка Telegram не должна налезать на полосу */
+.cookie-bar.show ~ .fab{bottom:104px}
+
 /* ======== 6.18.1 Карточки дистрибьюторов ======== */
 .partner-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
 .partner{display:flex;flex-direction:column;background:#fff;border:1px solid var(--line);
@@ -1088,6 +1108,17 @@ table.data td strong{color:var(--ink);font-weight:700}
 .modal[open]{animation:modal-in .3s var(--e-out)}
 @keyframes modal-in{from{opacity:0;transform:translateY(14px) scale(.985)}to{opacity:1;transform:none}}
 @media (prefers-reduced-motion:reduce){.modal[open]{animation:none}}
+/* Условия оплаты и доставки длиннее формы заказа — окну нужна ширина,
+   иначе списки распадаются на строки по два-три слова. */
+.modal-wide{width:min(680px,calc(100vw - 32px))}
+
+/* ======== 6.20.2 Условия оплаты, доставки и возврата ========
+   Один блок на страницу oplata-i-dostavka.html и на окно поверх страницы. */
+.terms h4{font-size:17px;letter-spacing:-.01em}
+.terms h4:not(:first-child){margin-top:30px}
+.terms .check{margin-top:14px}
+.terms .spec-list{margin-top:14px}
+.terms .spec-list div span:last-child{max-width:64%}
 
 /* ======== 6.21.1 Регалии колонкой в герое ======== */
 /* Показывается только на широких экранах — там слева от заголовка есть свободное

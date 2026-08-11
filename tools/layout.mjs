@@ -79,6 +79,9 @@ export const SITE = {
   wb: '',
   legal: 'ООО «Дентал Клин»',
   inn: '4632297120',
+  // ОГРН — обязательный реквизит блока информации для покупателя (ПП РФ № 2463)
+  // и требование модерации платёжного провайдера.
+  ogrn: '1234600003758',
   address: '305022, г. Курск, ул. Соловьиная, зд. 51, офис 16',
   addressShort: 'г. Курск, ул. Соловьиная, 51',
 };
@@ -184,6 +187,7 @@ function footer() {
         <h4>Компания</h4>
         <a href="o-kompanii.html">О компании</a>
         <a href="dokumenty.html">Документы</a>
+        <a href="oplata-i-dostavka.html">Оплата и доставка</a>
         <a href="gde-kupit.html">Где купить</a>
         <a href="dileram.html">Дилерам</a>
         <a href="blog.html">Блог</a>
@@ -197,7 +201,8 @@ function footer() {
     </div>
     <p class="foot-legal">Порошки для воздушно-абразивной обработки — медицинское изделие. Имеются противопоказания, необходима консультация специалиста. Информация на сайте не является публичной офертой.</p>
     <div class="foot-bottom">
-      <span>© <span id="year">2026</span> ${SITE.legal} · ИНН ${SITE.inn}</span>
+      <span>© <span id="year">2026</span> ${SITE.legal} · ИНН ${SITE.inn} · ОГРН ${SITE.ogrn}</span>
+      <a href="politika.html">Политика обработки персональных данных</a>
       <span>Производство полного цикла в России</span>
     </div>
   </div>
@@ -215,6 +220,71 @@ function orderModal() {
     <h3 id="order-modal-title">Ваш заказ</h3>
     <p class="note mt-xs" style="margin-bottom:20px">Соберите позиции и оставьте реквизиты — выставим счёт и подтвердим срок отгрузки в течение рабочего дня.</p>
     ${orderForm('m')}
+  </div>
+</dialog>`;
+}
+
+/* ---------- условия оплаты, доставки и возврата ----------
+   Обязательная информация для покупателя (Правила продажи, ПП РФ № 2463) — она же
+   то, что проверяет модерация платёжного провайдера перед подключением приёма оплаты.
+
+   Источник один на всё: и страница oplata-i-dostavka.html (директива <!-- @terms -->),
+   и окно поверх страницы берут этот блок. Две разошедшиеся версии условий — это спор
+   с покупателем, который мы заведомо проиграем.
+
+   Окно нужно рядом со страницей, а не вместо неё: у окна нет адреса, а ссылку
+   на условия требуют и модерация, и поисковики. */
+export function termsBlock() {
+  return `<div class="terms">
+      <h4>Продавец</h4>
+      <div class="spec-list">
+        <div><span>Наименование</span><span>${SITE.legal}</span></div>
+        <div><span>ИНН</span><span>${SITE.inn}</span></div>
+        <div><span>ОГРН</span><span>${SITE.ogrn}</span></div>
+        <div><span>Адрес</span><span>${SITE.address}</span></div>
+        <div><span>Связь</span><span><a href="${SITE.phoneHref}" class="tlink">${SITE.phone}</a> · <a href="mailto:${SITE.email}" class="tlink">${SITE.email}</a></span></div>
+      </div>
+
+      <h4>Товар</h4>
+      <ul class="check">
+        <li>Порошок стоматологический «Стомтеч.Про» — медицинское изделие, регистрационное удостоверение № РЗН 2025/25937 от 24.07.2025.</li>
+        <li>Срок годности — 4 года с даты производства, указанной на упаковке.</li>
+        <li>Цены указаны на страницах каталога в рублях и едины для всех покупателей.</li>
+      </ul>
+
+      <h4>Оплата</h4>
+      <ul class="check">
+        <li>Частным покупателям — онлайн через Систему быстрых платежей. Кассовый чек приходит на указанный e-mail сразу после оплаты.</li>
+        <li>Организациям и индивидуальным предпринимателям — по счёту, безналичным переводом с расчётного счёта.</li>
+      </ul>
+
+      <h4>Доставка</h4>
+      <ul class="check">
+        <li>СДЭК по всей России — до пункта выдачи или курьером по адресу.</li>
+        <li>Стоимость доставки рассчитывается при оформлении заказа по тарифам СДЭК и оплачивается покупателем.</li>
+        <li>Отгрузка со склада в Курске — в течение 10 дней с момента оплаты.</li>
+      </ul>
+
+      <h4>Возврат</h4>
+      <ul class="check">
+        <li>Отказаться от заказа можно в любое время до его получения и в течение 7 дней после.</li>
+        <li>Товар возвращается, если сохранены его товарный вид, потребительские свойства и упаковка.</li>
+        <li>Деньги возвращаются тем же способом, которым была произведена оплата, в течение 10 дней с момента получения заявления.</li>
+        <li>Расходы на обратную пересылку несёт покупатель.</li>
+      </ul>
+    </div>`;
+}
+
+/* Окно с условиями. Выводится на всех страницах, кроме самой страницы условий:
+   там содержимое и так на месте. Ссылки-триггеры остаются обычными ссылками
+   на oplata-i-dostavka.html — без JS посетитель просто перейдёт по ним. */
+function termsModal() {
+  return `<dialog class="modal modal-wide" id="terms-modal" aria-labelledby="terms-modal-title">
+  <div class="modal-card">
+    <button type="button" class="modal-close" data-close aria-label="Закрыть"><i class="i i-plus" aria-hidden="true"></i></button>
+    <h3 id="terms-modal-title">Оплата, доставка и возврат</h3>
+    <p class="note mt-xs" style="margin-bottom:20px">Условия продажи и обязательная информация о продавце и товаре.</p>
+    ${termsBlock()}
   </div>
 </dialog>`;
 }
@@ -250,9 +320,9 @@ export function orderForm(p) {
       <div class="field"><label for="${p}-note">Комментарий</label><input id="${p}-note" type="text" name="comment" data-label="Комментарий" placeholder="Наконечник, объём, сроки доставки"></div>
 
       <label class="consent"><input type="checkbox" required>
-        Согласен(на) на обработку персональных данных для обратной связи.</label>
+        Согласен(на) на обработку персональных данных и принимаю <a href="politika.html" target="_blank" rel="noopener">политику</a>.</label>
       <button type="submit" class="btn btn-primary btn-lg" style="width:100%;margin-top:18px">Отправить заказ <i class="i i-arrow-right" aria-hidden="true"></i></button>
-      <p class="note center mt-s">Отгружаем юридическим лицам и индивидуальным предпринимателям.${SITE.wb ? ` Частным покупателям — <a href="${SITE.wb}" class="tlink" rel="nofollow noopener" target="_blank">наш магазин на Wildberries</a>.` : ''}</p>
+      <p class="note center mt-s">Оформляя заказ, вы принимаете <a href="oplata-i-dostavka.html" class="tlink" data-terms>условия оплаты, доставки и возврата</a>.${SITE.wb ? ` Частным покупателям — <a href="${SITE.wb}" class="tlink" rel="nofollow noopener" target="_blank">наш магазин на Wildberries</a>.` : ''}</p>
     </form>`;
 }
 
@@ -273,6 +343,7 @@ ${footer()}
 
 <a href="${SITE.tg}" class="fab" aria-label="Написать в Telegram" rel="noopener"><i class="i i-chat" aria-hidden="true"></i></a>
 ${meta.slug === 'zakaz' ? '' : orderModal()}
+${meta.slug === 'oplata-i-dostavka' ? '' : termsModal()}
 ${cartData()}
 <script src="assets/app.js?v=${V.js}"></script>
 </body>

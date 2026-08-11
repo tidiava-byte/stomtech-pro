@@ -480,6 +480,34 @@
   }
 
   /* ---------------------------------------------------------
+     Уведомление о cookie
+
+     Метрика с вебвизором пишет действия на странице, поэтому предупредить
+     обязаны. Полоса не блокирует сайт: в России достаточно информировать,
+     а модальное окно поверх контента портит первое впечатление и мешает
+     поисковику. Согласие запоминаем, чтобы не показывать повторно.
+     --------------------------------------------------------- */
+  function initCookies() {
+    var KEY = 'stomtech-cookies';
+    try { if (localStorage.getItem(KEY)) return; } catch (e) { return; }
+
+    var bar = document.createElement('div');
+    bar.className = 'cookie-bar';
+    bar.setAttribute('role', 'note');
+    bar.innerHTML = '<p>Сайт использует файлы cookie: они нужны для работы корзины и для статистики посещаемости. ' +
+      'Подробнее — в <a href="politika.html">политике обработки персональных данных</a>.</p>' +
+      '<button type="button" class="btn btn-primary btn-sm">Понятно</button>';
+    document.body.appendChild(bar);
+    requestAnimationFrame(function () { bar.classList.add('show'); });
+
+    $('button', bar).addEventListener('click', function () {
+      try { localStorage.setItem(KEY, '1'); } catch (e) {}
+      bar.classList.remove('show');
+      setTimeout(function () { bar.remove(); }, 400);
+    });
+  }
+
+  /* ---------------------------------------------------------
      Реквизиты по ИНН (DaData)
 
      Главное трение B2B-заказа — вручную набивать название, КПП, ОГРН и юрадрес.
@@ -565,20 +593,22 @@
   }
 
   /* ---------------------------------------------------------
-     Окно заказа: кнопки «Сделать заказ» открывают форму поверх страницы.
-     Сами кнопки остаются ссылками на zakaz.html — если <dialog> не поддержан
-     или скрипт не доехал, посетитель просто уходит на страницу заказа.
+     Окна поверх страницы: заказ и условия оплаты/доставки.
+     Триггеры остаются обычными ссылками (zakaz.html, oplata-i-dostavka.html) —
+     если <dialog> не поддержан или скрипт не доехал, посетитель просто
+     переходит на соответствующую страницу.
      --------------------------------------------------------- */
-  function initOrderModal() {
-    var modal = document.getElementById('order-modal');
+  function initModal(id, attr, focusFirst) {
+    var modal = document.getElementById(id);
     if (!modal || typeof modal.showModal !== 'function') return;
 
-    $$('[data-order]').forEach(function (btn) {
+    $$('[' + attr + ']').forEach(function (btn) {
       btn.addEventListener('click', function (e) {
         e.preventDefault();
         modal.showModal();
         // На телефоне не ставим курсор в поле: иначе сразу выскакивает клавиатура
         // и закрывает половину формы. На десктопе — наоборот, удобно печатать сразу.
+        if (!focusFirst) return;
         var first = $('input', modal);
         if (first && window.matchMedia('(min-width: 861px)').matches) first.focus();
       });
@@ -679,8 +709,10 @@
     initBlogFilter();
     initFab();
     initCart();
+    initCookies();
     initInn();
-    initOrderModal();
+    initModal('order-modal', 'data-order', true);
+    initModal('terms-modal', 'data-terms', false);
     initForms();
     var y = document.getElementById('year');
     if (y) y.textContent = new Date().getFullYear();

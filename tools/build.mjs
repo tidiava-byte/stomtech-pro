@@ -15,7 +15,7 @@
 import { readdirSync, readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { SITE, AUTHORS, page, ctaBand, orderForm } from './layout.mjs';
+import { SITE, AUTHORS, page, ctaBand, orderForm, termsBlock } from './layout.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const CONTENT = join(ROOT, 'tools', 'content');
@@ -217,6 +217,8 @@ const DIRECTIVES = {
   cta: (arg) => ctaBand(arg ? JSON.parse(arg) : undefined),
   // форма заказа одна на сайт: и в окне, и на странице zakaz.html
   orderForm: (arg) => orderForm(arg || 'z'),
+  // условия продажи одни на сайт: и в окне, и на странице oplata-i-dostavka.html
+  terms: () => termsBlock(),
   figure,
   blogCards: (arg) => posts.slice(0, parseInt(arg, 10) || 3).map((p) => postCard(p)).join('\n      '),
   blogIndex: () => blogIndex(),
