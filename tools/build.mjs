@@ -329,7 +329,9 @@ for (const { meta, body } of all) {
 
 /* ---------- sitemap ---------- */
 const today = new Date().toISOString().slice(0, 10);
+// страницы с noindex в карту сайта не попадают: 404 незачем предлагать поисковику
 const urls = all
+  .filter((p) => !p.meta.noindex)
   .map((p) => ({
     loc: `${SITE.origin}/${p.meta.slug === 'index' ? '' : p.meta.slug + '.html'}`,
     lastmod: p.meta.updated || p.meta.date || today,

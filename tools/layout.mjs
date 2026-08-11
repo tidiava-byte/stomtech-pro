@@ -109,7 +109,9 @@ function head(m) {
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${m.title}</title>
 <meta name="description" content="${m.description}">${m.keywords ? `\n<meta name="keywords" content="${m.keywords}">` : ''}
-<link rel="canonical" href="${canonical}">
+${m.noindex ? `<meta name="robots" content="noindex, follow">
+` : `<link rel="canonical" href="${canonical}">
+`}
 <meta name="theme-color" content="#ffffff">
 <meta property="og:type" content="${m.type === 'article' ? 'article' : 'website'}">
 <meta property="og:site_name" content="${SITE.name}">

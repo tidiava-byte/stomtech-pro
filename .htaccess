@@ -1,0 +1,79 @@
+# STOMTECH PRO — настройки Apache для виртуального хостинга Beget.
+# На GitHub Pages этот файл игнорируется, он нужен только на боевом хостинге.
+# Кладётся в корень сайта, рядом с index.html.
+
+AddDefaultCharset UTF-8
+Options -Indexes
+DirectoryIndex index.html
+
+# ---------- Канонический адрес ----------
+# Один сайт должен отвечать по одному адресу: https и без www.
+# Иначе поисковик видит четыре копии сайта и делит между ними вес.
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+
+  # http → https (на Beget признак защищённого соединения приходит в заголовке)
+  RewriteCond %{HTTP:X-Forwarded-Proto} !https
+  RewriteCond %{HTTPS} !=on
+  RewriteRule ^(.*)$ https://%{HTTP_HOST}/$1 [R=301,L]
+
+  # www → без www
+  RewriteCond %{HTTP_HOST} ^www\.(.+)$ [NC]
+  RewriteRule ^(.*)$ https://%1/$1 [R=301,L]
+
+  # ---------- Переезды со старых адресов ----------
+  # Страница пробника удалена 2026-08-11: пробников больше нет.
+  RewriteRule ^probnik\.html$ /zakaz.html [R=301,L]
+  # Статья переименована: название GBT — запатентованный протокол EMS.
+  RewriteRule ^blog-gbt-protokol\.html$ /blog-protokol-procedury.html [R=301,L]
+</IfModule>
+
+ErrorDocument 404 /404.html
+
+# ---------- Сжатие ----------
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/plain text/css text/xml
+  AddOutputFilterByType DEFLATE application/javascript application/json
+  AddOutputFilterByType DEFLATE application/xml application/rss+xml
+  AddOutputFilterByType DEFLATE image/svg+xml
+</IfModule>
+
+# ---------- Кэш ----------
+# В адресах CSS и JS стоит отпечаток содержимого (style.css?v=хэш), поэтому их
+# можно кэшировать надолго: при изменении файла меняется адрес. Шрифты и картинки
+# лежат под своими именами и меняются редко. HTML не кэшируем: он должен обновляться
+# сразу, иначе посетитель получит старую страницу с новыми ассетами.
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresByType text/css                "access plus 1 year"
+  ExpiresByType application/javascript  "access plus 1 year"
+  ExpiresByType font/woff2              "access plus 1 year"
+  ExpiresByType image/webp              "access plus 90 days"
+  ExpiresByType image/png               "access plus 90 days"
+  ExpiresByType image/jpeg              "access plus 90 days"
+  ExpiresByType image/svg+xml           "access plus 90 days"
+  ExpiresByType text/html               "access plus 0 seconds"
+</IfModule>
+
+<IfModule mod_headers.c>
+  <FilesMatch "\.(css|js|woff2)$">
+    Header set Cache-Control "public, max-age=31536000, immutable"
+  </FilesMatch>
+  <FilesMatch "\.html$">
+    Header set Cache-Control "public, max-age=0, must-revalidate"
+  </FilesMatch>
+  # Мелкая гигиена безопасности: не отдаём referrer на чужие домены целиком
+  # и запрещаем встраивать сайт в чужие фреймы.
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+  Header always set X-Frame-Options "SAMEORIGIN"
+</IfModule>
+
+# ---------- Служебное ----------
+# Исходники сборки и документация не должны отдаваться по HTTP.
+<IfModule mod_rewrite.c>
+  RewriteRule ^tools/ - [F,L]
+</IfModule>
+<Files "README.md">
+  Require all denied
+</Files>

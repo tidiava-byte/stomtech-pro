@@ -1002,6 +1002,21 @@ table.data td strong{color:var(--ink);font-weight:700}
   opacity:0;transition:opacity .3s linear,transform .45s var(--e-out)}
 .toast.show{opacity:1;transform:translate(-50%,0)}
 
+/* ======== 6.18.1 Карточки дистрибьюторов ======== */
+.partner-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+.partner{display:flex;flex-direction:column;background:#fff;border:1px solid var(--line);
+  border-radius:var(--r-l);padding:26px;box-shadow:var(--sh-1);
+  transition:transform var(--t-mid) var(--e-out),box-shadow var(--t-mid) var(--e-out),border-color var(--t-mid) linear}
+.partner:hover{transform:translateY(-5px);box-shadow:var(--sh-3);border-color:transparent}
+/* Логотипы у партнёров разной формы и пропорций — от квадрата до полосы 4:1.
+   Общая рамка фиксированной высоты выравнивает их в один ряд. */
+.partner-logo{display:flex;align-items:center;height:56px;margin-bottom:18px}
+.partner-logo img{max-height:100%;max-width:170px;width:auto;height:auto}
+.partner h3{font-size:18px;letter-spacing:-.015em}
+.partner .role{font-size:13px;color:var(--gray-l);margin:2px 0 10px}
+.partner p{font-size:14.5px;color:var(--gray);line-height:1.55}
+.partner .tlink{margin-top:auto;padding-top:16px;font-size:14.5px}
+
 /* ======== 6.19.1 Корзина ======== */
 /* Карточка товара — не ссылка целиком, иначе в неё не вложить кнопку.
    Ссылку «Подробнее» растягиваем на всю карточку, кнопку поднимаем над ней. */
