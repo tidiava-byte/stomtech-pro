@@ -53,10 +53,32 @@ function dateRu(iso) {
 const proMark = (m) =>
   m.pro ? '<span class="pro-mark"><i class="i i-microscope" aria-hidden="true"></i>Для специалистов</span>' : '';
 
+/* Обложка карточки берётся автоматически: первая фотография из статьи,
+   которая уже лежит в assets/img/blog/. Пока фото нет — прежний градиент
+   с иконкой. Привязывать обложки руками не нужно: положили файл — обложка
+   появилась сама. */
+const coverPhoto = (p) => {
+  for (const m of p.body.matchAll(/<!--\s*@figure\s+(\{[\s\S]*?\})\s*-->/g)) {
+    let src;
+    try { src = JSON.parse(m[1]).src; } catch { continue; }
+    if (src && existsSync(join(ROOT, 'assets', 'img', 'blog', src))) return src;
+  }
+  return null;
+};
+
+const coverInner = (p) => {
+  const photo = coverPhoto(p);
+  const m = p.meta;
+  return photo
+    ? `<img src="assets/img/blog/${photo}" alt="" width="1400" height="782" loading="lazy">`
+    : `<i class="i i-${m.icon}" aria-hidden="true"></i>`;
+};
+
 function postCard(p, opts = {}) {
   const m = p.meta;
-  return `<a href="${m.slug}.html" class="blog-card${m.pro ? ' is-pro' : ''}"${opts.filter ? ` data-cat="${m.categorySlug}"` : ''} data-reveal="up">
-        <div class="blog-cover ${m.cover || ''}"><span class="tag">${m.category}</span>${proMark(m)}<i class="i i-${m.icon}" aria-hidden="true"></i></div>
+  const photo = coverPhoto(p);
+  return `<a href="${m.slug}.html" class="blog-card${m.pro ? ' is-pro' : ''}${photo ? ' has-photo' : ''}"${opts.filter ? ` data-cat="${m.categorySlug}"` : ''} data-reveal="up">
+        <div class="blog-cover ${photo ? '' : m.cover || ''}"><span class="tag">${m.category}</span>${proMark(m)}${coverInner(p)}</div>
         <div class="blog-body">
           <h3>${m.cardTitle || m.h1}</h3>
           <p>${m.excerpt}</p>
@@ -67,8 +89,9 @@ function postCard(p, opts = {}) {
 
 function postHeroCard(p) {
   const m = p.meta;
-  return `<a href="${m.slug}.html" class="blog-hero" data-reveal="rise">
-      <div class="blog-cover ${m.cover || ''}"><span class="tag">${m.category}</span>${proMark(m)}<i class="i i-${m.icon}" aria-hidden="true"></i></div>
+  const photo = coverPhoto(p);
+  return `<a href="${m.slug}.html" class="blog-hero${photo ? ' has-photo' : ''}" data-reveal="rise">
+      <div class="blog-cover ${photo ? '' : m.cover || ''}"><span class="tag">${m.category}</span>${proMark(m)}${coverInner(p)}</div>
       <div class="blog-hero-body">
         <span class="kicker">Читают чаще всего</span>
         <h2>${m.cardTitle || m.h1}</h2>
