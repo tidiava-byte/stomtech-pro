@@ -359,8 +359,17 @@
     return Object.keys(cart).reduce(function (n, sku) { return n + cart[sku]; }, 0);
   }
 
+  // Позиции без цены («по запросу») в сумму не входят, но в заявку попадают:
+  // менеджер посчитает их вручную при подтверждении.
   function cartSum(cart) {
-    return Object.keys(cart).reduce(function (s, sku) { return s + BY_SKU[sku].price * cart[sku]; }, 0);
+    return Object.keys(cart).reduce(function (s, sku) {
+      var p = BY_SKU[sku].price;
+      return p == null ? s : s + p * cart[sku];
+    }, 0);
+  }
+
+  function cartHasOnRequest(cart) {
+    return Object.keys(cart).some(function (sku) { return BY_SKU[sku].price == null; });
   }
 
   var rub = function (n) {
@@ -407,8 +416,10 @@
     $$('[data-cart-lines]').forEach(function (box) {
       box.innerHTML = skus.map(function (sku) {
         var p = BY_SKU[sku];
-        return '<div class="qty-row" data-name="' + p.title + ' — ' + rub(p.price * cart[sku]) + '" data-sku="' + sku + '">' +
-          '<span class="cart-name">' + p.title + '<small>' + rub(p.price) + ' за упаковку</small></span>' +
+        var sum = p.price == null ? 'цена по запросу' : rub(p.price * cart[sku]);
+        var each = p.price == null ? 'цену подтвердит менеджер' : rub(p.price) + ' за упаковку';
+        return '<div class="qty-row" data-name="' + p.title + ' — ' + sum + '" data-sku="' + sku + '">' +
+          '<span class="cart-name">' + p.title + '<small>' + each + '</small></span>' +
           '<span class="qty-ctl">' +
             '<button type="button" data-step="-" aria-label="Убрать одну упаковку: ' + p.title + '"><i class="i i-minus" aria-hidden="true"></i></button>' +
             '<span>' + cart[sku] + '</span>' +
@@ -429,7 +440,8 @@
 
     $$('[data-cart-empty]').forEach(function (el) { el.hidden = count > 0; });
     $$('[data-cart-total]').forEach(function (el) { el.hidden = count === 0; });
-    $$('[data-cart-sum]').forEach(function (el) { el.textContent = rub(sum); });
+    $('[data-cart-sum]').forEach(function (el) { el.textContent = rub(sum); });
+    $('[data-cart-note]').forEach(function (el) { el.hidden = !cartHasOnRequest(cart); });
     $$('form[data-cart-form] input[name="total"]').forEach(function (el) {
       el.value = count ? rub(sum) : '';
     });
@@ -504,6 +516,37 @@
       try { localStorage.setItem(KEY, '1'); } catch (e) {}
       bar.classList.remove('show');
       setTimeout(function () { bar.remove(); }, 400);
+    });
+  }
+
+  /* ---------------------------------------------------------
+     Тип покупателя
+
+     Спрашиваем до реквизитов: физлицам мы не отгружаем, и узнать об этом
+     человек должен сразу, а не после того как заполнит ИНН и КПП.
+     У выбранного «физического лица» поля реквизитов прячутся и перестают
+     быть обязательными — иначе форма молча не отправится.
+     --------------------------------------------------------- */
+  function initBuyerType() {
+    $$('form[data-cart-form]').forEach(function (form) {
+      var opts = $$('[data-buyer]', form);
+      if (!opts.length) return;
+      var note = $('[data-buyer-note]', form);
+      var fields = $('[data-legal-fields]', form);
+      var required = $$('[data-inn],[data-org]', form);
+
+      function apply() {
+        var person = !!$('[data-buyer="person"]:checked', form);
+        if (note) note.hidden = !person;
+        if (fields) fields.hidden = person;
+        required.forEach(function (el) {
+          if (person) el.removeAttribute('required');
+          else el.setAttribute('required', '');
+        });
+      }
+
+      opts.forEach(function (el) { el.addEventListener('change', apply); });
+      apply();
     });
   }
 
@@ -710,6 +753,7 @@
     initFab();
     initCart();
     initCookies();
+    initBuyerType();
     initInn();
     initModal('order-modal', 'data-order', true);
     initModal('terms-modal', 'data-terms', false);

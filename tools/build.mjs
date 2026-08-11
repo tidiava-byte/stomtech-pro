@@ -42,7 +42,7 @@ const perGram = (p) => (p.price / p.weight).toFixed(1).replace('.', ',');
 const SUBST = {
   price: (p) => `${rub(p.price)} ₽`,
   priceNum: (p) => String(p.price),
-  perGram,
+  perGram: (p) => (p.price == null ? '—' : perGram(p)),
   weight: (p) => String(p.weight),
   grit: (p) => String(p.grit),
 };
@@ -55,6 +55,82 @@ function fillPrices(text, where) {
     if (!fn) throw new Error(`${where}: неизвестная подстановка ${all}. Доступны: ${Object.keys(SUBST).join(', ')}`);
     return fn(p);
   });
+}
+
+/* ---------- микроразметка, собираемая автоматически ----------
+   Хлебные крошки уже есть в разметке каждой страницы — значит, их можно
+   не описывать вручную второй раз, а вынуть из готового HTML. Поисковик
+   показывает такую цепочку прямо в выдаче вместо голого адреса, и это
+   заметно поднимает кликабельность.
+
+   WebSite отдаётся только с главной: он описывает сайт целиком. */
+function breadcrumbLd(body) {
+  const nav = body.match(/<nav class="crumb"[^>]*>([\s\S]*?)<\/nav>/);
+  if (!nav) return null;
+
+  const items = [];
+  for (const m of nav[1].matchAll(/<a href="([^"]+)"[^>]*>([^<]+)<\/a>/g)) {
+    items.push({ href: m[1], label: m[2].trim() });
+  }
+  const last = nav[1].match(/aria-current="page"[^>]*>([^<]+)</);
+  if (last) items.push({ href: null, label: last[1].trim() });
+  if (items.length < 2) return null;
+
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: items.map((it, i) => ({
+      '@type': 'ListItem',
+      position: i + 1,
+      name: it.label,
+      ...(it.href ? { item: `${SITE.origin}/${it.href === 'index.html' ? '' : it.href}` } : {}),
+    })),
+  };
+}
+
+const websiteLd = () => ({
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  name: SITE.name,
+  url: `${SITE.origin}/`,
+  inLanguage: 'ru-RU',
+  publisher: { '@type': 'Organization', name: SITE.legal },
+});
+
+/* ---------- типографика ----------
+   Висящие предлоги и союзы в конце строки — самый заметный признак неаккуратной
+   вёрстки, и на узких экранах они вылезают почти в каждом абзаце. Чинить это
+   руками в сорока файлах бессмысленно: правило должно работать само, в том числе
+   для текстов, которые напишут потом.
+
+   Обрабатываем только текст между тегами: содержимое самих тегов, скриптов
+   и стилей не трогаем, иначе поедут адреса и атрибуты. */
+const SHORT_WORDS = /(^|[\s(«"„—-])([А-Яа-яЁёA-Za-z]{1,2}|как|что|это|или|для|под|при|над|про|без|его|её|их|наш|наша|уже|ещё)\s+(?=[А-Яа-яЁёA-Za-z0-9«])/g;
+
+function typoText(t) {
+  // короткое слово прилипает к следующему
+  t = t.replace(SHORT_WORDS, '$1$2 ');
+  // тире не начинает строку: пробел перед ним делаем неразрывным
+  t = t.replace(/([^\s])\s+([—–])\s/g, '$1 $2 ');
+  // число не отрывается от единицы измерения
+  t = t.replace(/(\d)\s+(мкм|г|кг|мл|мм|см|₽|руб\.|шт\.|мин|ч|%)(?![А-Яа-яЁё])/g, '$1 $2');
+  return t;
+}
+
+function typo(html) {
+  let skip = 0;
+  return html
+    .split(/(<[^>]*>)/)
+    .map((chunk) => {
+      if (chunk.startsWith('<')) {
+        const tag = chunk.toLowerCase();
+        if (/^<(script|style|pre|code)[\s>]/.test(tag)) skip++;
+        else if (/^<\/(script|style|pre|code)>/.test(tag)) skip = Math.max(0, skip - 1);
+        return chunk;
+      }
+      return skip ? chunk : typoText(chunk);
+    })
+    .join('');
 }
 
 /* ---------- чтение фрагментов ---------- */
@@ -103,19 +179,24 @@ const coverPhoto = (p) => {
   return null;
 };
 
-const coverInner = (p) => {
+/* В карточке обложка показывается шириной около 400 px, а лежала она в полном
+   размере 1400 px — на индексе блога это два десятка лишних сотен килобайт.
+   Сетка карточек берёт уменьшенную копию из blog/card/, статьи и большая
+   карточка-герой — оригинал. */
+const coverInner = (p, card = false) => {
   const photo = coverPhoto(p);
   const m = p.meta;
-  return photo
-    ? `<img src="assets/img/blog/${photo}" alt="" width="1400" height="782" loading="lazy">`
-    : `<i class="i i-${m.icon}" aria-hidden="true"></i>`;
+  if (!photo) return `<i class="i i-${m.icon}" aria-hidden="true"></i>`;
+  const small = card && existsSync(join(ROOT, 'assets', 'img', 'blog', 'card', photo));
+  const src = small ? `assets/img/blog/card/${photo}` : `assets/img/blog/${photo}`;
+  return `<img src="${src}" alt="" width="${small ? 800 : 1400}" height="${small ? 447 : 782}" loading="lazy" decoding="async">`;
 };
 
 function postCard(p, opts = {}) {
   const m = p.meta;
   const photo = coverPhoto(p);
   return `<a href="${m.slug}.html" class="blog-card${m.pro ? ' is-pro' : ''}${photo ? ' has-photo' : ''}"${opts.filter ? ` data-cat="${m.categorySlug}"` : ''} data-reveal="up">
-        <div class="blog-cover ${photo ? '' : m.cover || ''}"><span class="tag">${m.category}</span>${proMark(m)}${coverInner(p)}</div>
+        <div class="blog-cover ${photo ? '' : m.cover || ''}"><span class="tag">${m.category}</span>${proMark(m)}${coverInner(p, true)}</div>
         <div class="blog-body">
           <h3>${m.cardTitle || m.h1}</h3>
           <p>${m.excerpt}</p>
@@ -325,7 +406,11 @@ for (const { meta, body } of all) {
   } else if (!meta.jsonld && meta.slug === 'index') {
     meta.jsonld = { '@context': 'https://schema.org', ...ORG };
   }
-  writeFileSync(join(ROOT, `${meta.slug}.html`), page(meta, expand(body, meta)), 'utf8');
+  const html = typo(expand(body, meta));
+  // крошки достаём из готовой разметки, чтобы не описывать их второй раз руками
+  const extra = [breadcrumbLd(html), meta.slug === 'index' ? websiteLd() : null].filter(Boolean);
+  if (extra.length) meta.jsonldExtra = extra;
+  writeFileSync(join(ROOT, `${meta.slug}.html`), page(meta, html), 'utf8');
   count++;
 }
 

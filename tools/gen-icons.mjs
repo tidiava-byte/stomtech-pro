@@ -40,6 +40,8 @@ const stroke = {
   leaf:       `<path d="M20.4 4.2c0 8.4-4.4 13.2-11.2 13.2-2 0-3.6-.5-3.6-.5s-.5 1.7-.5 3.5"/><path d="M4.6 20.4c-1.6-6.4.6-12 6.2-13.8 2.8-.9 6-1 9.6-2.4"/>`,
   // интерфейс
   arrowRight: `<path d="M4.6 12h14.8"/><path d="m13.4 6 6 6-6 6"/>`,
+  arrowDown:  `<path d="M12 4.6v14.8"/><path d="m6 13.4 6 6 6-6"/>`,
+  info:       `<circle cx="12" cy="12" r="8.8"/><path d="M12 11.2v5"/><path d="M12 7.9h.01"/>`,
   arrowUpRight:`<path d="M7 17 17 7"/><path d="M8.4 7H17v8.6"/>`,
   chevronDown:`<path d="m6.4 9.4 5.6 5.6 5.6-5.6"/>`,
   check:      `<path d="m4.8 12.6 4.8 4.8L19.2 6.6"/>`,

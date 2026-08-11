@@ -102,7 +102,10 @@
 /* Атрибут hidden слабее любого правила с классом: без !important элемент
    с display:flex или display:grid останется видимым, сколько его ни прячь. */
 [hidden]{display:none!important}
-html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+/* Ни один блок не должен уметь растянуть страницу вбок. clip, а не hidden:
+   hidden превращает html в контейнер прокрутки и ломает position:sticky. */
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth;overflow-x:clip}
+body{overflow-x:clip}
 
 /* Полоса прокрутки. Стандартный Firefox-синтаксис плюс вебкитовский:
    первый работает в Firefox, второй — в Chrome, Safari и Edge. */
@@ -598,6 +601,7 @@ p{text-wrap:pretty}
 
 /* ======== 6.10 Двухколоночный блок ======== */
 .split{display:grid;grid-template-columns:1fr 1fr;gap:clamp(32px,5vw,68px);align-items:center}
+.split > *{min-width:0}
 .split.rev .txt{order:2}
 .split .media{position:relative;border-radius:var(--r-l);overflow:hidden;
   box-shadow:var(--sh-3);background:var(--mist)}
@@ -1024,6 +1028,9 @@ table.data td strong{color:var(--ink);font-weight:700}
 
 /* ======== 6.18.1 Карточки дистрибьюторов ======== */
 .partner-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+/* без min-width:0 колонка грида не сжимается меньше своего содержимого,
+   и на узком экране сетка распирает страницу вбок */
+.partner-grid > *{min-width:0}
 .partner{display:flex;flex-direction:column;background:#fff;border:1px solid var(--line);
   border-radius:var(--r-l);padding:26px;box-shadow:var(--sh-1);
   transition:transform var(--t-mid) var(--e-out),box-shadow var(--t-mid) var(--e-out),border-color var(--t-mid) linear}
@@ -1031,11 +1038,53 @@ table.data td strong{color:var(--ink);font-weight:700}
 /* Логотипы у партнёров разной формы и пропорций — от квадрата до полосы 4:1.
    Общая рамка фиксированной высоты выравнивает их в один ряд. */
 .partner-logo{display:flex;align-items:center;height:56px;margin-bottom:18px}
-.partner-logo img{max-height:100%;max-width:170px;width:auto;height:auto}
+.partner-logo img{max-height:100%;max-width:min(170px,100%);width:auto;height:auto}
 .partner h3{font-size:18px;letter-spacing:-.015em}
 .partner .role{font-size:13px;color:var(--gray-l);margin:2px 0 10px}
 .partner p{font-size:14.5px;color:var(--gray);line-height:1.55}
 .partner .tlink{margin-top:auto;padding-top:16px;font-size:14.5px}
+
+/* ======== 6.18.2 Карточка набора ======== */
+/* Набор — четвёртая позиция каталога, но ставить его в один ряд с тремя
+   флаконами нельзя: получилась бы неполная строка. Отдельная широкая карточка
+   и работает лучше как акцент. */
+.set-card{display:grid;grid-template-columns:minmax(0,0.9fr) minmax(0,1.1fr);
+  gap:0;margin-top:28px;overflow:hidden;background:#fff;
+  border:1px solid var(--line);border-radius:var(--r-l);box-shadow:var(--sh-2)}
+.set-media{display:flex;align-items:center;justify-content:center;
+  padding:32px;background:var(--mist2)}
+.set-media img{max-width:100%;height:auto;border-radius:var(--r-s)}
+.set-body{padding:clamp(26px,3.4vw,40px);display:flex;flex-direction:column}
+.set-body h3{margin:14px 0 10px;font-size:clamp(21px,2.4vw,27px);letter-spacing:-.02em}
+.set-body > p{color:var(--gray);line-height:1.6}
+.set-body .buy{max-width:280px}
+.buy[data-accent="set"]{--buy:var(--blue);--buy-soft:var(--blue-soft)}
+@media (max-width:860px){
+  .set-card{grid-template-columns:1fr}
+  .set-media{padding:22px}
+}
+
+/* ======== 6.18.3 Тип покупателя ======== */
+.buyer-switch{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.buyer-opt{position:relative;display:block;cursor:pointer}
+.buyer-opt input{position:absolute;opacity:0;width:0;height:0}
+.buyer-opt > span{display:flex;flex-direction:column;gap:2px;
+  padding:14px 16px;border:1.5px solid var(--line);border-radius:var(--r-m);
+  background:#fff;transition:border-color var(--t-fast) linear,background-color var(--t-fast) linear}
+.buyer-opt strong{font-size:14.5px;font-weight:700}
+.buyer-opt small{font-size:12.5px;color:var(--gray-l);line-height:1.35}
+.buyer-opt:hover > span{border-color:var(--blue-l,#9FC9E4)}
+.buyer-opt input:checked + span{border-color:var(--blue);background:var(--blue-soft)}
+.buyer-opt input:focus-visible + span{outline:2px solid var(--blue);outline-offset:2px}
+
+/* Пояснение для физлица. Заменяет собой поля реквизитов, а не дополняет их:
+   человеку не надо заполнять то, по чему мы всё равно не отгрузим. */
+.buyer-note{display:flex;gap:14px;margin-top:16px;padding:16px 18px;
+  background:var(--coral-soft);border-radius:var(--r-m)}
+.buyer-note .ic{flex:none;color:var(--coral-d)}
+.buyer-note h4{font-size:15px;margin-bottom:4px}
+.buyer-note p{font-size:14px;color:var(--ink2);line-height:1.5}
+@media (max-width:600px){.buyer-switch{grid-template-columns:1fr}}
 
 /* ======== 6.19.1 Корзина ======== */
 /* Карточка товара — не ссылка целиком, иначе в неё не вложить кнопку.
@@ -1195,6 +1244,10 @@ table.data td strong{color:var(--ink);font-weight:700}
   .blog-hero .blog-cover{min-height:220px}
 }
 @media (max-width:860px){
+  /* боковой заезд на узком экране не нужен: он давал горизонтальную прокрутку
+     до момента появления блока */
+  .js [data-reveal="left"],
+  .js [data-reveal="right"]{transform:translate3d(0,24px,0)}
   .nav-links,.nav-phone{display:none}
   .nav-cta .btn-primary,.nav-cta .btn-blue{display:none}
   .burger{display:flex}
@@ -1208,7 +1261,10 @@ table.data td strong{color:var(--ink);font-weight:700}
   .nav-links.open a:hover{background:var(--mist)}
   .nav-links.open .nav-only-mobile{display:block;background:var(--coral);color:#fff;
     text-align:center;font-weight:700;margin-top:10px;box-shadow:var(--sh-coral)}
-  .prod-grid,.feat-grid,.blog-grid,.cert-grid{grid-template-columns:repeat(2,1fr)}
+  .prod-grid,.feat-grid,.blog-grid,.cert-grid,.partner-grid{grid-template-columns:repeat(2,1fr)}
+  .format-grid,.format-grid.two{grid-template-columns:1fr}
+  .format-img{height:210px;padding:20px}
+  .format-body{padding:22px}
   .regalia{grid-template-columns:repeat(2,1fr)}
   .stats{grid-template-columns:1fr 1fr}
   .stat:nth-child(3)::before,.stat:nth-child(1)::before{display:none}
@@ -1221,7 +1277,7 @@ table.data td strong{color:var(--ink);font-weight:700}
 @media (max-width:600px){
   body{font-size:16px}
   .container{padding-inline:18px}
-  .prod-grid,.feat-grid,.blog-grid,.cert-grid,.field-row{grid-template-columns:1fr}
+  .prod-grid,.feat-grid,.blog-grid,.cert-grid,.field-row,.partner-grid{grid-template-columns:1fr}
   .cert-shot{aspect-ratio:4/3}
   .bento-cell,.bento-cell.wide,.bento-cell.full{grid-column:span 6}
   .foot-grid{grid-template-columns:1fr;gap:26px}

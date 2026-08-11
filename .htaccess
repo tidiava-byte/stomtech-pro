@@ -22,16 +22,19 @@ DirectoryIndex index.html
   RewriteRule ^(.*)$ https://%1/$1 [R=301,L]
 
   # ---------- Переезды со старого сайта на Tilda ----------
+  # Адреса абсолютные и с https: SSL завершается выше по стеку, Apache считает
+  # соединение обычным http и на относительном пути подставил бы http — выходил
+  # бы лишний переход http → https.
   # В индексе поисковиков было три адреса. Главная совпадает, две страницы
   # переносим на ближайшие по смыслу — иначе накопленный вес уйдёт в 404.
-  RewriteRule ^documents/?$ /dokumenty.html [R=301,L]
-  RewriteRule ^lp/?$ /catalog.html [R=301,L]
+  RewriteRule ^documents/?$ https://stomtech.pro/dokumenty.html [R=301,L]
+  RewriteRule ^lp/?$ https://stomtech.pro/catalog.html [R=301,L]
 
   # ---------- Переезды внутри нового сайта ----------
   # Страница пробника удалена 2026-08-11: пробников больше нет.
-  RewriteRule ^probnik\.html$ /zakaz.html [R=301,L]
+  RewriteRule ^probnik\.html$ https://stomtech.pro/zakaz.html [R=301,L]
   # Статья переименована: название GBT — запатентованный протокол EMS.
-  RewriteRule ^blog-gbt-protokol\.html$ /blog-protokol-procedury.html [R=301,L]
+  RewriteRule ^blog-gbt-protokol\.html$ https://stomtech.pro/blog-protokol-procedury.html [R=301,L]
 </IfModule>
 
 ErrorDocument 404 /404.html

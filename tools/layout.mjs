@@ -136,7 +136,8 @@ ${m.noindex ? `<meta name="robots" content="noindex, follow">
 Если app.js не доехал (кэш, блокировщик, ошибка), сторож через 2,5 с показывает всё как есть:
 пустой страницы не будет ни при каких обстоятельствах. */
 (function(h){h.classList.add('js');
-window.__revealGuard=setTimeout(function(){h.classList.add('no-motion')},2500)})(document.documentElement)</script>${metrikaHead()}${m.jsonld ? `\n<script type="application/ld+json">${JSON.stringify(m.jsonld)}</script>` : ''}`;
+window.__revealGuard=setTimeout(function(){h.classList.add('no-motion')},2500)})(document.documentElement)</script>${metrikaHead()}${[m.jsonld, ...(m.jsonldExtra || [])].filter(Boolean).map((j) => `
+<script type="application/ld+json">${JSON.stringify(j)}</script>`).join('')}`;
 }
 
 /* ---------- шапка ---------- */
@@ -303,7 +304,29 @@ export function orderForm(p) {
       </div>
       <input type="hidden" name="total" data-label="Сумма заказа" value="">
 
-      <div class="field-row" style="margin-top:22px">
+      <!-- Кто покупает. Спрашиваем до реквизитов: физлицу мы не отгружаем,
+           и узнать об этом человек должен сразу, а не после заполнения формы. -->
+      <p class="note" style="margin:22px 0 8px">Кто оформляет заказ</p>
+      <div class="buyer-switch" role="radiogroup" aria-label="Тип покупателя">
+        <label class="buyer-opt">
+          <input type="radio" name="buyer" value="Юридическое лицо или ИП" data-label="Покупатель" data-buyer="legal" checked>
+          <span><strong>Юрлицо или ИП</strong><small>Счёт, документы, безналичный расчёт</small></span>
+        </label>
+        <label class="buyer-opt">
+          <input type="radio" name="buyer" value="Физическое лицо" data-label="Покупатель" data-buyer="person">
+          <span><strong>Физическое лицо</strong><small>Для частных покупателей</small></span>
+        </label>
+      </div>
+
+      <div class="buyer-note" data-buyer-note hidden>
+        <span class="ic"><i class="i i-info" aria-hidden="true"></i></span>
+        <div>
+          <h4>Частным лицам мы не отгружаем</h4>
+          <p>Порошки — медицинское изделие для профессионального применения в клинике, поэтому напрямую с производства они поставляются только организациям и индивидуальным предпринимателям.${SITE.wb ? ` Купить в розницу можно в <a href="${SITE.wb}" class="tlink" rel="nofollow noopener" target="_blank">нашем магазине на Wildberries</a>.` : ' Розничная продажа идёт через маркетплейсы — напишите нам, подскажем, где купить.'}</p>
+        </div>
+      </div>
+
+      <div class="field-row" data-legal-fields style="margin-top:18px">
         <div class="field"><label for="${p}-inn">ИНН *</label><input id="${p}-inn" type="text" name="inn" data-label="ИНН" data-inn required inputmode="numeric" pattern="[0-9]{10}|[0-9]{12}" placeholder="10 или 12 цифр" autocomplete="off"></div>
         <div class="field"><label for="${p}-org">Организация или ИП *</label><input id="${p}-org" type="text" name="org" data-label="Организация" data-org required autocomplete="organization" placeholder="Подставится по ИНН"></div>
       </div>
