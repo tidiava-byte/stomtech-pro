@@ -350,8 +350,10 @@
       btn.addEventListener('click', function (e) {
         e.preventDefault();
         modal.showModal();
+        // На телефоне не ставим курсор в поле: иначе сразу выскакивает клавиатура
+        // и закрывает половину формы. На десктопе — наоборот, удобно печатать сразу.
         var first = $('input', modal);
-        if (first) first.focus();
+        if (first && window.matchMedia('(min-width: 861px)').matches) first.focus();
       });
     });
 

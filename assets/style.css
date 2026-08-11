@@ -983,11 +983,18 @@ table.data td strong{color:var(--ink);font-weight:700}
 .toast.show{opacity:1;transform:translate(-50%,0)}
 
 /* ======== 6.20.1 Окно заказа ======== */
-.modal{border:0;padding:0;background:transparent;max-width:min(520px,calc(100vw - 32px));
-  max-height:min(88vh,860px);overflow:visible;color:var(--ink)}
+/* Позицию задаём сами: сброс `*{margin:0}` в начале файла затирает браузерное
+   `margin:auto` у <dialog>, и окно прилипает к левому верхнему углу. */
+.modal{position:fixed;inset:0;margin:auto;border:0;padding:0;background:transparent;
+  width:min(520px,calc(100vw - 32px));max-height:min(88vh,860px);
+  overflow:visible;color:var(--ink)}
 .modal::backdrop{background:rgba(15,25,34,.5);backdrop-filter:blur(4px)}
 .modal-card{position:relative;background:#fff;border-radius:var(--r-l);box-shadow:var(--sh-4);
   padding:clamp(24px,4vw,34px);max-height:min(88vh,860px);overflow:auto}
+/* Прокручиваемый блок браузер делает фокусируемым и рисует рамку сразу при открытии.
+   Убираем её для мыши, оставляя для клавиатуры. */
+.modal:focus,.modal-card:focus{outline:none}
+.modal-card:focus-visible{outline:2px solid var(--blue);outline-offset:-2px}
 .modal-card h3{font-size:23px;letter-spacing:-.02em;padding-right:38px}
 .modal-close{position:absolute;top:16px;right:16px;width:34px;height:34px;border-radius:50%;
   display:grid;place-items:center;background:var(--mist);color:var(--gray);
