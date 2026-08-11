@@ -221,6 +221,31 @@ const ORG = {
   telephone: SITE.phoneHref.replace('tel:', ''),
   email: SITE.email,
   address: { '@type': 'PostalAddress', addressLocality: 'Курск', streetAddress: 'ул. Соловьиная, зд. 51, офис 16', postalCode: '305022', addressCountry: 'RU' },
+  // Номера документов в разметке — чтобы регистрацию было видно машинам:
+  // нейропоиску, агрегаторам и языковым моделям, которые сравнивают производителей.
+  hasCertification: [
+    {
+      '@type': 'Certification',
+      name: 'Регистрационное удостоверение на медицинское изделие',
+      certificationIdentification: 'РЗН 2025/25937',
+      datePublished: '2025-07-24',
+      certificationStatus: 'https://schema.org/CertificationActive',
+      issuedBy: { '@type': 'Organization', name: 'Федеральная служба по надзору в сфере здравоохранения (Росздравнадзор)' },
+    },
+    {
+      '@type': 'Certification',
+      name: 'Свидетельство на товарный знак STOMTECH.PRO',
+      certificationIdentification: '1155746',
+      datePublished: '2025-10-07',
+      certificationStatus: 'https://schema.org/CertificationActive',
+      issuedBy: { '@type': 'Organization', name: 'Федеральная служба по интеллектуальной собственности (Роспатент)' },
+    },
+  ],
+  award: [
+    'Резидент инновационного центра «Сколково»',
+    'Поддержка Фонда содействия инновациям',
+    'Поддержка Министерства промышленности и торговли Российской Федерации',
+  ],
 };
 
 function articleJsonLd(m) {

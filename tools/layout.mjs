@@ -103,12 +103,12 @@ function header(active) {
   <div class="container nav">
     <a href="index.html" class="brand" aria-label="STOMTECH PRO — на главную"><img src="assets/img/logo.svg" alt="STOMTECH PRO" width="150" height="23"></a>
     <nav class="nav-links" aria-label="Основное меню">
-      <a href="probnik.html" class="nav-only-mobile">Получить пробник бесплатно</a>
+      <a href="zakaz.html" class="nav-only-mobile">Сделать заказ</a>
 ${links}
     </nav>
     <div class="nav-cta">
       <a href="${SITE.phoneHref}" class="nav-phone"><i class="i i-phone" aria-hidden="true"></i>${SITE.phone}</a>
-      <a href="probnik.html" class="btn btn-primary btn-sm">Пробник бесплатно</a>
+      <a href="zakaz.html" class="btn btn-primary btn-sm">Сделать заказ</a>
       <button class="burger" type="button" aria-label="Открыть меню"><span></span><span></span><span></span></button>
     </div>
   </div>
@@ -187,11 +187,11 @@ ${footer()}
 
 export function ctaBand(opts = {}) {
   const {
-    title = 'Протестируйте все три порошка бесплатно',
-    text = 'Отправим комплект ULTRA, DELICATE и HARD в вашу клинику. Оцените расход, деликатность и комфорт пациента на своём оборудовании.',
-    btn = 'Получить пробник',
-    href = 'probnik.html',
-    note = 'Доставка по РФ · Без обязательств · Ответим в течение рабочего дня',
+    title = 'Закажите порошки напрямую с производства',
+    text = 'ULTRA, DELICATE и HARD — со склада в Курске. Подберём фракции под задачи вашего приёма, рассчитаем объём и назовём срок доставки.',
+    btn = 'Сделать заказ',
+    href = 'zakaz.html',
+    note = 'Доставка по РФ · Отгрузка с производства · Ответим в течение рабочего дня',
   } = opts;
   return `<section class="section tight">
   <div class="container">

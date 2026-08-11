@@ -980,9 +980,64 @@ table.data td strong{color:var(--ink);font-weight:700}
   opacity:0;transition:opacity .3s linear,transform .45s var(--e-out)}
 .toast.show{opacity:1;transform:translate(-50%,0)}
 
+/* ======== 6.21.1 Регалии колонкой в герое ======== */
+/* Показывается только на широких экранах — там слева от заголовка есть свободное
+   поле. На узких вместо неё работает полоса .regalia-band под первым экраном. */
+.hero-rail{display:none}
+.hero-rail a{display:flex;align-items:center;justify-content:center;min-height:76px;
+  padding:12px;background:rgba(255,255,255,.92);border:1px solid var(--line);
+  border-radius:var(--r-s);box-shadow:var(--sh-1);backdrop-filter:blur(6px);
+  transition:transform var(--t-fast) var(--e-out),box-shadow var(--t-mid) var(--e-out),border-color var(--t-fast) linear}
+.hero-rail a:hover{transform:translateX(3px);box-shadow:var(--sh-2);border-color:transparent}
+.hero-rail img{max-width:100%;max-height:38px;width:auto;height:auto}
+.hero-rail .tall img{max-height:56px}
+
+/* ======== 6.22 Полоса регалий ======== */
+/* Логотипы приходят с белой подложкой и собственными подписями, поэтому плитка
+   белая, а размер ограничен по высоте: пропорции знаков различаются втрое. */
+.regalia{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.reg{display:flex;align-items:center;justify-content:center;min-height:124px;
+  padding:18px 24px;background:#fff;border:1px solid var(--line);
+  border-radius:var(--r-m);box-shadow:var(--sh-1);
+  transition:transform var(--t-mid) var(--e-out),box-shadow var(--t-mid) var(--e-out),border-color var(--t-mid) linear}
+.reg:hover{transform:translateY(-3px);box-shadow:var(--sh-2);border-color:transparent}
+.reg img{max-height:60px;max-width:100%;width:auto;height:auto}
+/* Вертикальным знакам с подписью в две строки даём больше высоты, иначе
+   в ряду с широкими логотипами они читаются вдвое мельче. */
+.reg.tall img{max-height:84px}
+
+/* ======== 6.23 Карточки сертификации и регалий ======== */
+.cert-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:22px}
+.cert-grid.two{grid-template-columns:repeat(2,1fr);gap:26px}
+.cert{display:flex;flex-direction:column;background:#fff;border:1px solid var(--line);
+  border-radius:var(--r-l);padding:28px 26px 24px;box-shadow:var(--sh-1);
+  transition:transform var(--t-mid) var(--e-out),box-shadow var(--t-mid) var(--e-out),border-color var(--t-mid) linear}
+.cert:hover{transform:translateY(-5px);box-shadow:var(--sh-3);border-color:transparent}
+.cert h3{font-size:17px;line-height:1.35;letter-spacing:-.015em;margin-bottom:8px}
+.cert p{font-size:14px;color:var(--gray);line-height:1.5}
+/* Рамка одинаковой высоты: и вертикальный скан документа, и квадратный рендер
+   ложатся в один силуэт — ряд карточек не «пляшет». */
+.cert-shot{position:relative;margin:auto 0 20px;border-radius:var(--r-s);aspect-ratio:3/4;
+  overflow:hidden;background:linear-gradient(180deg,#F8FBFD 0%,#EDF4F9 100%)}
+/* Снимок центрируется абсолютно, а не гридом: проценты высоты внутри грид-ячейки
+   с aspect-ratio считаются не во всех браузерах — вертикальные сканы обрезало. */
+.cert-shot img{position:absolute;inset:18px;margin:auto;width:auto;height:auto;
+  max-width:calc(100% - 36px);max-height:calc(100% - 36px)}
+.cert-shot.doc img{box-shadow:var(--sh-2);border-radius:3px}
+/* Заголовки карточек разной длины, а снимки документов выравниваются по нижнему
+   краю: ряд читается как один блок, а не как лесенка. */
+.cert .tlink{font-size:14.5px}
+
 /* ---------------------------------------------------------------
    7. АДАПТИВ
    --------------------------------------------------------------- */
+/* Колонка регалий в герое включается только там, где она гарантированно
+   не наезжает на заголовок: ширина заголовка 900px + колонка 132px + поля. */
+@media (min-width:1240px){
+  .hero-rail{display:grid;gap:10px;width:132px;
+    position:absolute;left:24px;top:50%;transform:translateY(-50%);z-index:3}
+  .regalia-band{display:none}
+}
 @media (max-width:1080px){
   .article-layout{grid-template-columns:1fr}
   .toc{display:none}
@@ -1013,7 +1068,8 @@ table.data td strong{color:var(--ink);font-weight:700}
   .nav-links.open a:hover{background:var(--mist)}
   .nav-links.open .nav-only-mobile{display:block;background:var(--coral);color:#fff;
     text-align:center;font-weight:700;margin-top:10px;box-shadow:var(--sh-coral)}
-  .prod-grid,.feat-grid,.blog-grid{grid-template-columns:repeat(2,1fr)}
+  .prod-grid,.feat-grid,.blog-grid,.cert-grid{grid-template-columns:repeat(2,1fr)}
+  .regalia{grid-template-columns:repeat(2,1fr)}
   .stats{grid-template-columns:1fr 1fr}
   .stat:nth-child(3)::before,.stat:nth-child(1)::before{display:none}
   .stat:nth-child(1),.stat:nth-child(2){border-bottom:1px solid var(--line)}
@@ -1025,7 +1081,8 @@ table.data td strong{color:var(--ink);font-weight:700}
 @media (max-width:600px){
   body{font-size:16px}
   .container{padding-inline:18px}
-  .prod-grid,.feat-grid,.blog-grid,.field-row{grid-template-columns:1fr}
+  .prod-grid,.feat-grid,.blog-grid,.cert-grid,.field-row{grid-template-columns:1fr}
+  .cert-shot{aspect-ratio:4/3}
   .bento-cell,.bento-cell.wide,.bento-cell.full{grid-column:span 6}
   .foot-grid{grid-template-columns:1fr;gap:26px}
   .steps{grid-template-columns:1fr}
