@@ -23,6 +23,14 @@ const V = { css: rev('style.css'), icons: rev('icons.css'), js: rev('app.js') };
 const OG_FILE = 'og-cover.jpg';
 const HAS_OG = existsSync(join(ASSETS, 'img', OG_FILE));
 
+/* Товары для корзины. Тот же tools/products.json, что и для цен на страницах, —
+   витрина и корзина обязаны считать по одному прайсу. В браузер уходит только
+   необходимое: артикул, название, цена, фасовка. */
+const CATALOG = JSON.parse(readFileSync(join(ASSETS, '..', 'tools', 'products.json'), 'utf8'));
+const cartData = () => `<script>window.__PRODUCTS=${JSON.stringify(
+  CATALOG.items.map((p) => ({ sku: p.sku, title: p.title, price: p.price, weight: p.weight }))
+)}</script>`;
+
 /* Яндекс.Метрика. Номер счётчика — в одном месте: меняется здесь, попадает на все страницы.
    Пустая строка полностью убирает счётчик из сборки (например, для локального просмотра).
    dataLayer объявляем до инициализации: без него не заработает электронная коммерция,
@@ -55,6 +63,10 @@ export const SITE = {
   tg: 'https://t.me/stomtechpro',
   wa: 'https://wa.me/79307669988',
   vk: 'https://vk.com/stomtech_pro',
+  // Ссылка на розницу для физлиц. Показывается ТОЛЬКО в форме заказа, с rel=nofollow:
+  // закупщик клиники, увидевший розничную цену, начнёт сравнивать её с оптовой.
+  // Пока пусто — строка про Wildberries не выводится.
+  wb: '',
   legal: 'ООО «Дентал Клин»',
   inn: '4632297120',
   address: '305022, г. Курск, ул. Соловьиная, зд. 51, офис 16',
@@ -127,6 +139,7 @@ ${links}
     </nav>
     <div class="nav-cta">
       <a href="${SITE.phoneHref}" class="nav-phone"><i class="i i-phone" aria-hidden="true"></i>${SITE.phone}</a>
+      <a href="zakaz.html" class="cart-btn" data-order hidden aria-label="Корзина"><i class="i i-box" aria-hidden="true"></i><span class="cart-count" data-cart-count>0</span></a>
       <a href="zakaz.html" class="btn btn-primary btn-sm" data-order>Сделать заказ</a>
       <button class="burger" type="button" aria-label="Открыть меню"><span></span><span></span><span></span></button>
     </div>
@@ -185,38 +198,47 @@ function footer() {
    стоить посетителю лишнего перехода. Кнопки при этом остаются ссылками на zakaz.html —
    если JS не доехал, они просто уводят на страницу заказа, как раньше. */
 function orderModal() {
-  const qty = (name, label) => `        <div class="qty-row" data-name="${name}">
-          <span>${label}</span>
-          <span class="qty-ctl">
-            <button type="button" data-step="-" aria-label="Убрать: ${label}"><i class="i i-minus" aria-hidden="true"></i></button>
-            <span>0</span>
-            <button type="button" data-step="+" aria-label="Добавить: ${label}"><i class="i i-plus" aria-hidden="true"></i></button>
-          </span>
-        </div>`;
   return `<dialog class="modal" id="order-modal" aria-labelledby="order-modal-title">
   <div class="modal-card">
     <button type="button" class="modal-close" data-close aria-label="Закрыть"><i class="i i-plus" aria-hidden="true"></i></button>
-    <h3 id="order-modal-title">Заявка на заказ</h3>
-    <p class="note mt-xs" style="margin-bottom:20px">Заполните форму — свяжемся в течение рабочего дня и подтвердим наличие, стоимость и срок доставки.</p>
-    <form data-lead="Заказ с главной">
-      <div class="field"><label for="m-name">Имя *</label><input id="m-name" type="text" name="name" data-label="Имя" required autocomplete="name" placeholder="Как к вам обращаться"></div>
-      <div class="field"><label for="m-clinic">Клиника или ИП *</label><input id="m-clinic" type="text" name="clinic" data-label="Клиника" required autocomplete="organization" placeholder="Название и город"></div>
-      <div class="field"><label for="m-phone">Телефон *</label><input id="m-phone" type="tel" name="phone" data-label="Телефон" required autocomplete="tel" placeholder="+7 (___) ___-__-__"></div>
-
-      <p class="note" style="margin:20px 0 4px">Что отгрузить</p>
-${qty('ULTRA 14 мкм · 170 г', 'ULTRA · 14 мкм · 170 г')}
-${qty('DELICATE 30 мкм · 170 г', 'DELICATE · 30 мкм · 170 г')}
-${qty('HARD 40 мкм · 300 г', 'HARD · 40 мкм · 300 г')}
-${qty('Комплект из трёх флаконов', 'Комплект в коробке · 3 флакона')}
-
-      <div class="field" style="margin-top:20px"><label for="m-note">Комментарий</label><input id="m-note" type="text" name="comment" data-label="Комментарий" placeholder="Наконечник, объём, сроки"></div>
-      <label class="consent"><input type="checkbox" required>
-        Согласен(на) на обработку персональных данных для обратной связи.</label>
-      <button type="submit" class="btn btn-primary btn-lg" style="width:100%;margin-top:18px">Отправить заявку <i class="i i-arrow-right" aria-hidden="true"></i></button>
-      <p class="note center mt-s">Не знаете, какая фракция нужна? Оставьте нули и опишите задачу — подберём.</p>
-    </form>
+    <h3 id="order-modal-title">Ваш заказ</h3>
+    <p class="note mt-xs" style="margin-bottom:20px">Соберите позиции и оставьте реквизиты — выставим счёт и подтвердим срок отгрузки в течение рабочего дня.</p>
+    ${orderForm('m')}
   </div>
 </dialog>`;
+}
+
+/* Форма заказа. Используется и в окне, и на странице zakaz.html, поэтому вынесена
+   в одно место: расхождение двух форм заказа — прямой путь к потерянным заявкам.
+   Строки корзины подставляет app.js в [data-cart-lines]; разметка строки — та же
+   .qty-row, что уже умеет собирать сборщик заявок, так что ничего дублировать не надо.
+   `p` — префикс идентификаторов полей: на странице заказа и в окне они не должны совпасть. */
+export function orderForm(p) {
+  return `<form data-lead="Заказ" data-cart-form>
+      <p class="note" style="margin:0 0 4px">Что отгрузить</p>
+      <div data-cart-lines></div>
+      <p class="note cart-empty" data-cart-empty>Корзина пуста. Добавьте порошки из <a href="catalog.html" class="tlink">каталога</a> — или опишите задачу в комментарии, подберём сами.</p>
+      <div class="cart-total" data-cart-total hidden>
+        <span>Итого</span><strong data-cart-sum>0 ₽</strong>
+      </div>
+      <input type="hidden" name="total" data-label="Сумма заказа" value="">
+
+      <div class="field-row" style="margin-top:22px">
+        <div class="field"><label for="${p}-inn">ИНН *</label><input id="${p}-inn" type="text" name="inn" data-label="ИНН" required inputmode="numeric" pattern="[0-9]{10}|[0-9]{12}" placeholder="10 или 12 цифр"></div>
+        <div class="field"><label for="${p}-org">Организация или ИП *</label><input id="${p}-org" type="text" name="org" data-label="Организация" required autocomplete="organization" placeholder="Название и город"></div>
+      </div>
+      <div class="field"><label for="${p}-name">Имя *</label><input id="${p}-name" type="text" name="name" data-label="Имя" required autocomplete="name" placeholder="Как к вам обращаться"></div>
+      <div class="field-row">
+        <div class="field"><label for="${p}-phone">Телефон *</label><input id="${p}-phone" type="tel" name="phone" data-label="Телефон" required autocomplete="tel" placeholder="+7 (___) ___-__-__"></div>
+        <div class="field"><label for="${p}-email">E-mail для счёта</label><input id="${p}-email" type="email" name="email" data-label="E-mail" autocomplete="email" placeholder="Для счёта и УПД"></div>
+      </div>
+      <div class="field"><label for="${p}-note">Комментарий</label><input id="${p}-note" type="text" name="comment" data-label="Комментарий" placeholder="Наконечник, объём, сроки доставки"></div>
+
+      <label class="consent"><input type="checkbox" required>
+        Согласен(на) на обработку персональных данных для обратной связи.</label>
+      <button type="submit" class="btn btn-primary btn-lg" style="width:100%;margin-top:18px">Отправить заказ <i class="i i-arrow-right" aria-hidden="true"></i></button>
+      <p class="note center mt-s">Отгружаем юридическим лицам и индивидуальным предпринимателям.${SITE.wb ? ` Частным покупателям — <a href="${SITE.wb}" class="tlink" rel="nofollow noopener" target="_blank">наш магазин на Wildberries</a>.` : ''}</p>
+    </form>`;
 }
 
 /* ---------- сборка страницы ---------- */
@@ -236,6 +258,7 @@ ${footer()}
 
 <a href="${SITE.tg}" class="fab" aria-label="Написать в Telegram" rel="noopener"><i class="i i-chat" aria-hidden="true"></i></a>
 ${meta.slug === 'zakaz' ? '' : orderModal()}
+${cartData()}
 <script src="assets/app.js?v=${V.js}"></script>
 </body>
 </html>

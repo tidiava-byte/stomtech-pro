@@ -131,23 +131,6 @@
   }
 
   /* ---------------------------------------------------------
-     Счётчик количества в форме заказа
-     --------------------------------------------------------- */
-  function initQty() {
-    $$('.qty-ctl').forEach(function (ctl) {
-      var out = $('span', ctl);
-      if (!out) return;
-      var val = parseInt(out.textContent, 10) || 0;
-      $$('button', ctl).forEach(function (b) {
-        b.addEventListener('click', function () {
-          val = Math.max(0, val + (b.dataset.step === '+' ? 1 : -1));
-          out.textContent = val;
-        });
-      });
-    });
-  }
-
-  /* ---------------------------------------------------------
      Цифры, которые «набегают» при появлении
      Формат хранится в data-count: "1 990", "14 мкм", "100+"
      --------------------------------------------------------- */
@@ -338,6 +321,144 @@
   }
 
   /* ---------------------------------------------------------
+     Корзина
+
+     Состояние — только количества по артикулам, в localStorage:
+     { "ULTRA-170": 2 }. Цены здесь не храним, они всегда берутся из
+     window.__PRODUCTS (собран из tools/products.json). Иначе после смены
+     прайса у вернувшегося посетителя в корзине осталась бы старая цена.
+
+     Когда появится сервер, сумму всё равно будет пересчитывать он: цифры
+     из браузера доверия не заслуживают. Здесь сумма нужна только чтобы
+     клиника видела порядок трат до отправки заявки.
+     --------------------------------------------------------- */
+  var CART_KEY = 'stomtech-cart';
+  var PRODUCTS = Array.isArray(window.__PRODUCTS) ? window.__PRODUCTS : [];
+  var BY_SKU = {};
+  PRODUCTS.forEach(function (p) { BY_SKU[p.sku] = p; });
+
+  function cartRead() {
+    try {
+      var raw = JSON.parse(localStorage.getItem(CART_KEY) || '{}');
+      var clean = {};
+      // отбрасываем артикулы, которых больше нет в прайсе, и мусорные количества
+      Object.keys(raw).forEach(function (sku) {
+        var n = parseInt(raw[sku], 10);
+        if (BY_SKU[sku] && n > 0) clean[sku] = Math.min(n, 999);
+      });
+      return clean;
+    } catch (e) { return {}; }
+  }
+
+  function cartWrite(cart) {
+    try { localStorage.setItem(CART_KEY, JSON.stringify(cart)); } catch (e) {}
+    cartRender();
+  }
+
+  function cartCount(cart) {
+    return Object.keys(cart).reduce(function (n, sku) { return n + cart[sku]; }, 0);
+  }
+
+  function cartSum(cart) {
+    return Object.keys(cart).reduce(function (s, sku) { return s + BY_SKU[sku].price * cart[sku]; }, 0);
+  }
+
+  var rub = function (n) {
+    return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ' ') + ' ₽';
+  };
+
+  /* Отправка события электронной коммерции. Метрика уже инициализирована
+     с ecommerce:"dataLayer" — остаётся класть события в нужном формате. */
+  function ecommerce(action, items) {
+    if (!window.dataLayer) return;
+    var payload = { currencyCode: 'RUB' };
+    payload[action] = {
+      products: items.map(function (it) {
+        return { id: it.sku, name: BY_SKU[it.sku].title, price: BY_SKU[it.sku].price, quantity: it.qty };
+      }),
+    };
+    window.dataLayer.push({ ecommerce: payload });
+  }
+
+  function cartSet(sku, qty, opts) {
+    if (!BY_SKU[sku]) return;
+    var cart = cartRead();
+    var was = cart[sku] || 0;
+    qty = Math.max(0, Math.min(999, qty));
+    if (qty === was) return;
+    if (qty === 0) delete cart[sku]; else cart[sku] = qty;
+    cartWrite(cart);
+    if (!(opts && opts.silent)) {
+      ecommerce(qty > was ? 'add' : 'remove', [{ sku: sku, qty: Math.abs(qty - was) }]);
+    }
+  }
+
+  /* Перерисовка всего, что показывает корзину: счётчик в шапке, строки и сумма
+     в каждой форме заказа (их две — окно и страница zakaz.html). */
+  function cartRender() {
+    var cart = cartRead();
+    var count = cartCount(cart);
+    var sum = cartSum(cart);
+    var skus = Object.keys(cart);
+
+    $$('[data-cart-count]').forEach(function (el) { el.textContent = count; });
+    $$('.cart-btn').forEach(function (el) { el.hidden = count === 0; });
+
+    $$('[data-cart-lines]').forEach(function (box) {
+      box.innerHTML = skus.map(function (sku) {
+        var p = BY_SKU[sku];
+        return '<div class="qty-row" data-name="' + p.title + ' — ' + rub(p.price * cart[sku]) + '" data-sku="' + sku + '">' +
+          '<span class="cart-name">' + p.title + '<small>' + rub(p.price) + ' за упаковку</small></span>' +
+          '<span class="qty-ctl">' +
+            '<button type="button" data-step="-" aria-label="Убрать одну упаковку: ' + p.title + '"><i class="i i-minus" aria-hidden="true"></i></button>' +
+            '<span>' + cart[sku] + '</span>' +
+            '<button type="button" data-step="+" aria-label="Добавить одну упаковку: ' + p.title + '"><i class="i i-plus" aria-hidden="true"></i></button>' +
+          '</span></div>';
+      }).join('');
+    });
+
+    $$('[data-cart-empty]').forEach(function (el) { el.hidden = count > 0; });
+    $$('[data-cart-total]').forEach(function (el) { el.hidden = count === 0; });
+    $$('[data-cart-sum]').forEach(function (el) { el.textContent = rub(sum); });
+    $$('form[data-cart-form] input[name="total"]').forEach(function (el) {
+      el.value = count ? rub(sum) : '';
+    });
+  }
+
+  function initCart() {
+    if (!PRODUCTS.length) return;
+
+    // «В корзину» на карточках и страницах продуктов
+    $$('[data-add]').forEach(function (btn) {
+      btn.addEventListener('click', function (e) {
+        e.preventDefault();
+        var sku = btn.getAttribute('data-add');
+        var cart = cartRead();
+        cartSet(sku, (cart[sku] || 0) + 1);
+        toast(BY_SKU[sku].title + ' — в корзине');
+      });
+    });
+
+    // плюс-минус внутри строк корзины (строки перерисовываются, поэтому слушаем на форме)
+    $$('[data-cart-lines]').forEach(function (box) {
+      box.addEventListener('click', function (e) {
+        var btn = e.target.closest ? e.target.closest('button[data-step]') : null;
+        if (!btn) return;
+        var row = btn.closest('.qty-row');
+        var sku = row && row.getAttribute('data-sku');
+        if (!sku) return;
+        var cart = cartRead();
+        cartSet(sku, (cart[sku] || 0) + (btn.dataset.step === '+' ? 1 : -1));
+      });
+    });
+
+    // корзина живёт в другой вкладке того же сайта — синхронизируем
+    window.addEventListener('storage', function (e) { if (e.key === CART_KEY) cartRender(); });
+
+    cartRender();
+  }
+
+  /* ---------------------------------------------------------
      Окно заказа: кнопки «Сделать заказ» открывают форму поверх страницы.
      Сами кнопки остаются ссылками на zakaz.html — если <dialog> не поддержан
      или скрипт не доехал, посетитель просто уходит на страницу заказа.
@@ -403,6 +524,17 @@
             '?subject=' + encodeURIComponent('Заявка с сайта' + (title ? ' — ' + title : '')) +
             '&body=' + encodeURIComponent(text);
         }
+        // Заказ ушёл — фиксируем покупку в аналитике и очищаем корзину,
+        // иначе следующая заявка уедет с теми же позициями.
+        if (form.hasAttribute('data-cart-form')) {
+          var cart = cartRead();
+          var skus = Object.keys(cart);
+          if (skus.length) {
+            ecommerce('purchase', skus.map(function (s) { return { sku: s, qty: cart[s] }; }));
+            cartWrite({});
+          }
+        }
+
         form.reset();
         $$('.qty-ctl span', form).forEach(function (s) { s.textContent = '0'; });
         var dlg = form.closest('dialog');
@@ -432,7 +564,6 @@
     initHeader();
     initMenu();
     initAccordion();
-    initQty();
     initCounters();
     initSpotlight();
     initHeroParallax();
@@ -441,6 +572,7 @@
     initArticle();
     initBlogFilter();
     initFab();
+    initCart();
     initOrderModal();
     initForms();
     var y = document.getElementById('year');

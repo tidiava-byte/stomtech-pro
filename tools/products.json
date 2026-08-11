@@ -1,0 +1,53 @@
+{
+  "currency": "RUB",
+  "vat": "уточняется у заказчика: ОСНО с НДС 20% или УСН без НДС",
+  "updated": "2026-08-11",
+  "note": "Единственный источник правды по ценам. Правится здесь, расходится по сайту при сборке (node tools/build.mjs) и уходит в корзину. Цена — целое число рублей.",
+  "items": [
+    {
+      "sku": "ULTRA-170",
+      "name": "ULTRA",
+      "title": "ULTRA · 14 мкм · 170 г",
+      "grit": 14,
+      "base": "эритритол",
+      "weight": 170,
+      "price": 1990,
+      "page": "ultra.html",
+      "img": "assets/img/bottle-ultra.webp",
+      "b24ProductId": null
+    },
+    {
+      "sku": "DELICATE-170",
+      "name": "DELICATE",
+      "title": "DELICATE · 30 мкм · 170 г",
+      "grit": 30,
+      "base": "эритритол",
+      "weight": 170,
+      "price": 1750,
+      "page": "delicate.html",
+      "img": "assets/img/bottle-delicate.webp",
+      "b24ProductId": null
+    },
+    {
+      "sku": "HARD-300",
+      "name": "HARD",
+      "title": "HARD · 40 мкм · 300 г",
+      "grit": 40,
+      "base": "сода",
+      "weight": 300,
+      "price": 890,
+      "page": "hard.html",
+      "img": "assets/img/bottle-hard.webp",
+      "b24ProductId": null
+    }
+  ],
+  "onRequest": [
+    {
+      "sku": "SET-3",
+      "name": "Комплект из трёх флаконов",
+      "title": "Комплект в коробке · 3 флакона",
+      "img": "assets/img/photo/box-front.webp",
+      "reason": "Цену на комплект заказчик не давал — в корзине идёт позицией «по запросу», в сумму не входит."
+    }
+  ]
+}

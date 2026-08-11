@@ -24,7 +24,7 @@
 <link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png?v=2">
 <link rel="preload" href="assets/fonts/onest-cyrillic-700.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="assets/fonts/onest-cyrillic-400.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="assets/style.css?v=e20bbb08">
+<link rel="stylesheet" href="assets/style.css?v=ea872a14">
 <link rel="stylesheet" href="assets/icons.css?v=a039b63e">
 <script>/* Помечаем, что JS жив — только тогда прячем блоки под анимацию появления.
 Если app.js не доехал (кэш, блокировщик, ошибка), сторож через 2,5 с показывает всё как есть:
@@ -55,6 +55,7 @@ ym(111496189,'init',{ssr:true,webvisor:true,clickmap:true,ecommerce:"dataLayer",
     </nav>
     <div class="nav-cta">
       <a href="tel:+79307669988" class="nav-phone"><i class="i i-phone" aria-hidden="true"></i>+7 (930) 766-99-88</a>
+      <a href="zakaz.html" class="cart-btn" data-order hidden aria-label="Корзина"><i class="i i-box" aria-hidden="true"></i><span class="cart-count" data-cart-count>0</span></a>
       <a href="zakaz.html" class="btn btn-primary btn-sm" data-order>Сделать заказ</a>
       <button class="burger" type="button" aria-label="Открыть меню"><span></span><span></span><span></span></button>
     </div>
@@ -320,55 +321,36 @@ ym(111496189,'init',{ssr:true,webvisor:true,clickmap:true,ecommerce:"dataLayer",
 <dialog class="modal" id="order-modal" aria-labelledby="order-modal-title">
   <div class="modal-card">
     <button type="button" class="modal-close" data-close aria-label="Закрыть"><i class="i i-plus" aria-hidden="true"></i></button>
-    <h3 id="order-modal-title">Заявка на заказ</h3>
-    <p class="note mt-xs" style="margin-bottom:20px">Заполните форму — свяжемся в течение рабочего дня и подтвердим наличие, стоимость и срок доставки.</p>
-    <form data-lead="Заказ с главной">
+    <h3 id="order-modal-title">Ваш заказ</h3>
+    <p class="note mt-xs" style="margin-bottom:20px">Соберите позиции и оставьте реквизиты — выставим счёт и подтвердим срок отгрузки в течение рабочего дня.</p>
+    <form data-lead="Заказ" data-cart-form>
+      <p class="note" style="margin:0 0 4px">Что отгрузить</p>
+      <div data-cart-lines></div>
+      <p class="note cart-empty" data-cart-empty>Корзина пуста. Добавьте порошки из <a href="catalog.html" class="tlink">каталога</a> — или опишите задачу в комментарии, подберём сами.</p>
+      <div class="cart-total" data-cart-total hidden>
+        <span>Итого</span><strong data-cart-sum>0 ₽</strong>
+      </div>
+      <input type="hidden" name="total" data-label="Сумма заказа" value="">
+
+      <div class="field-row" style="margin-top:22px">
+        <div class="field"><label for="m-inn">ИНН *</label><input id="m-inn" type="text" name="inn" data-label="ИНН" required inputmode="numeric" pattern="[0-9]{10}|[0-9]{12}" placeholder="10 или 12 цифр"></div>
+        <div class="field"><label for="m-org">Организация или ИП *</label><input id="m-org" type="text" name="org" data-label="Организация" required autocomplete="organization" placeholder="Название и город"></div>
+      </div>
       <div class="field"><label for="m-name">Имя *</label><input id="m-name" type="text" name="name" data-label="Имя" required autocomplete="name" placeholder="Как к вам обращаться"></div>
-      <div class="field"><label for="m-clinic">Клиника или ИП *</label><input id="m-clinic" type="text" name="clinic" data-label="Клиника" required autocomplete="organization" placeholder="Название и город"></div>
-      <div class="field"><label for="m-phone">Телефон *</label><input id="m-phone" type="tel" name="phone" data-label="Телефон" required autocomplete="tel" placeholder="+7 (___) ___-__-__"></div>
+      <div class="field-row">
+        <div class="field"><label for="m-phone">Телефон *</label><input id="m-phone" type="tel" name="phone" data-label="Телефон" required autocomplete="tel" placeholder="+7 (___) ___-__-__"></div>
+        <div class="field"><label for="m-email">E-mail для счёта</label><input id="m-email" type="email" name="email" data-label="E-mail" autocomplete="email" placeholder="Для счёта и УПД"></div>
+      </div>
+      <div class="field"><label for="m-note">Комментарий</label><input id="m-note" type="text" name="comment" data-label="Комментарий" placeholder="Наконечник, объём, сроки доставки"></div>
 
-      <p class="note" style="margin:20px 0 4px">Что отгрузить</p>
-        <div class="qty-row" data-name="ULTRA 14 мкм · 170 г">
-          <span>ULTRA · 14 мкм · 170 г</span>
-          <span class="qty-ctl">
-            <button type="button" data-step="-" aria-label="Убрать: ULTRA · 14 мкм · 170 г"><i class="i i-minus" aria-hidden="true"></i></button>
-            <span>0</span>
-            <button type="button" data-step="+" aria-label="Добавить: ULTRA · 14 мкм · 170 г"><i class="i i-plus" aria-hidden="true"></i></button>
-          </span>
-        </div>
-        <div class="qty-row" data-name="DELICATE 30 мкм · 170 г">
-          <span>DELICATE · 30 мкм · 170 г</span>
-          <span class="qty-ctl">
-            <button type="button" data-step="-" aria-label="Убрать: DELICATE · 30 мкм · 170 г"><i class="i i-minus" aria-hidden="true"></i></button>
-            <span>0</span>
-            <button type="button" data-step="+" aria-label="Добавить: DELICATE · 30 мкм · 170 г"><i class="i i-plus" aria-hidden="true"></i></button>
-          </span>
-        </div>
-        <div class="qty-row" data-name="HARD 40 мкм · 300 г">
-          <span>HARD · 40 мкм · 300 г</span>
-          <span class="qty-ctl">
-            <button type="button" data-step="-" aria-label="Убрать: HARD · 40 мкм · 300 г"><i class="i i-minus" aria-hidden="true"></i></button>
-            <span>0</span>
-            <button type="button" data-step="+" aria-label="Добавить: HARD · 40 мкм · 300 г"><i class="i i-plus" aria-hidden="true"></i></button>
-          </span>
-        </div>
-        <div class="qty-row" data-name="Комплект из трёх флаконов">
-          <span>Комплект в коробке · 3 флакона</span>
-          <span class="qty-ctl">
-            <button type="button" data-step="-" aria-label="Убрать: Комплект в коробке · 3 флакона"><i class="i i-minus" aria-hidden="true"></i></button>
-            <span>0</span>
-            <button type="button" data-step="+" aria-label="Добавить: Комплект в коробке · 3 флакона"><i class="i i-plus" aria-hidden="true"></i></button>
-          </span>
-        </div>
-
-      <div class="field" style="margin-top:20px"><label for="m-note">Комментарий</label><input id="m-note" type="text" name="comment" data-label="Комментарий" placeholder="Наконечник, объём, сроки"></div>
       <label class="consent"><input type="checkbox" required>
         Согласен(на) на обработку персональных данных для обратной связи.</label>
-      <button type="submit" class="btn btn-primary btn-lg" style="width:100%;margin-top:18px">Отправить заявку <i class="i i-arrow-right" aria-hidden="true"></i></button>
-      <p class="note center mt-s">Не знаете, какая фракция нужна? Оставьте нули и опишите задачу — подберём.</p>
+      <button type="submit" class="btn btn-primary btn-lg" style="width:100%;margin-top:18px">Отправить заказ <i class="i i-arrow-right" aria-hidden="true"></i></button>
+      <p class="note center mt-s">Отгружаем юридическим лицам и индивидуальным предпринимателям.</p>
     </form>
   </div>
 </dialog>
-<script src="assets/app.js?v=f9935bb4"></script>
+<script>window.__PRODUCTS=[{"sku":"ULTRA-170","title":"ULTRA · 14 мкм · 170 г","price":1990,"weight":170},{"sku":"DELICATE-170","title":"DELICATE · 30 мкм · 170 г","price":1750,"weight":170},{"sku":"HARD-300","title":"HARD · 40 мкм · 300 г","price":890,"weight":300}]</script>
+<script src="assets/app.js?v=af2b346e"></script>
 </body>
 </html>

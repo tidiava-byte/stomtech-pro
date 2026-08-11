@@ -15,14 +15,51 @@
 import { readdirSync, readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { SITE, AUTHORS, page, ctaBand } from './layout.mjs';
+import { SITE, AUTHORS, page, ctaBand, orderForm } from './layout.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const CONTENT = join(ROOT, 'tools', 'content');
 
+/* ---------- цены: единственный источник ----------
+   Раньше цена была зашита в шести файлах и продублирована в JSON-LD и в описаниях
+   страниц — смена цены означала шесть правок с риском, что витрина разойдётся со счётом.
+   Теперь цифры живут в tools/products.json и подставляются при сборке.
+
+   Подстановки (работают и в мета-блоке, и в разметке):
+     {{price:ULTRA-170}}    → 1 990 ₽      цена с неразрывным пробелом
+     {{priceNum:ULTRA-170}} → 1990         число, для JSON-LD
+     {{perGram:ULTRA-170}}  → 11,7         рублей за грамм
+     {{weight:ULTRA-170}}   → 170
+     {{grit:ULTRA-170}}     → 14
+   Неизвестный артикул или подстановка — ошибка сборки: молча показать неверную цену
+   хуже, чем не собраться. */
+export const PRODUCTS = JSON.parse(readFileSync(join(ROOT, 'tools', 'products.json'), 'utf8'));
+const BY_SKU = new Map(PRODUCTS.items.map((p) => [p.sku, p]));
+
+const rub = (n) => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+const perGram = (p) => (p.price / p.weight).toFixed(1).replace('.', ',');
+
+const SUBST = {
+  price: (p) => `${rub(p.price)} ₽`,
+  priceNum: (p) => String(p.price),
+  perGram,
+  weight: (p) => String(p.weight),
+  grit: (p) => String(p.grit),
+};
+
+function fillPrices(text, where) {
+  return text.replace(/\{\{(\w+):([A-Z0-9-]+)\}\}/g, (all, kind, sku) => {
+    const p = BY_SKU.get(sku);
+    if (!p) throw new Error(`${where}: в products.json нет артикула ${sku} (подстановка ${all})`);
+    const fn = SUBST[kind];
+    if (!fn) throw new Error(`${where}: неизвестная подстановка ${all}. Доступны: ${Object.keys(SUBST).join(', ')}`);
+    return fn(p);
+  });
+}
+
 /* ---------- чтение фрагментов ---------- */
 function readFragment(dir, file) {
-  const raw = readFileSync(join(dir, file), 'utf8');
+  const raw = fillPrices(readFileSync(join(dir, file), 'utf8'), file);
   const m = raw.match(/^\s*<!--\s*(\{[\s\S]*?\})\s*-->/);
   if (!m) throw new Error(`${file}: нет мета-блока <!--{ ... }--> в начале файла`);
   let meta;
@@ -178,6 +215,8 @@ function figure(arg) {
 
 const DIRECTIVES = {
   cta: (arg) => ctaBand(arg ? JSON.parse(arg) : undefined),
+  // форма заказа одна на сайт: и в окне, и на странице zakaz.html
+  orderForm: (arg) => orderForm(arg || 'z'),
   figure,
   blogCards: (arg) => posts.slice(0, parseInt(arg, 10) || 3).map((p) => postCard(p)).join('\n      '),
   blogIndex: () => blogIndex(),
