@@ -68,7 +68,8 @@
   --ink-deep-2:#16232F;
 
   /* — акценты продуктов — */
-  --ultra:#40A6DA; --delicate:#2FA463; --hard:#F26B6B;
+  /* по этикеткам: ULTRA бирюзовый, DELICATE голубой, HARD красный */
+  --ultra:#2FA8A2; --delicate:#2E9BD6; --hard:#DC4B48;
 
   /* — глубина: многослойные тени вместо одной плоской — */
   --sh-1:0 1px 2px rgba(15,25,34,.04), 0 2px 6px rgba(15,25,34,.04);
@@ -447,15 +448,15 @@ p{text-wrap:pretty}
 .prod-card .accent{position:absolute;top:0;left:0;right:0;height:4px;border-radius:4px 4px 0 0;
   transform:scaleX(.28);transform-origin:left;transition:transform var(--t-slow) var(--e-out)}
 .prod-card:hover .accent{transform:scaleX(1)}
-.prod-card.ultra{--tint:#DFF0FA}    .prod-card.ultra .accent{background:var(--ultra)}
-.prod-card.delicate{--tint:#E2F5EA} .prod-card.delicate .accent{background:var(--delicate)}
-.prod-card.hard{--tint:#FDE7E7}     .prod-card.hard .accent{background:var(--hard)}
+.prod-card.ultra{--tint:#DEF3F2}    .prod-card.ultra .accent{background:var(--ultra)}
+.prod-card.delicate{--tint:#DFF0FA} .prod-card.delicate .accent{background:var(--delicate)}
+.prod-card.hard{--tint:#FCE4E4}     .prod-card.hard .accent{background:var(--hard)}
 
 .prod-tag{align-self:flex-start;font-size:11.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;
   padding:6px 13px;border-radius:var(--r-pill)}
-.prod-card.ultra .prod-tag{background:#E1F1FA;color:#136B93}
-.prod-card.delicate .prod-tag{background:#E2F4EA;color:#1B6E3E}
-.prod-card.hard .prod-tag{background:#FDE7E7;color:#C74444}
+.prod-card.ultra .prod-tag{background:#DEF3F2;color:#136F6B}
+.prod-card.delicate .prod-tag{background:#E1F1FA;color:#13618F}
+.prod-card.hard .prod-tag{background:#FCE4E4;color:#B33936}
 /* flex, а не grid: в grid-области процентная высота картинки неразрешима
    (высота трека auto) и изображение раздувается до натурального размера */
 .prod-img{height:212px;display:flex;align-items:center;justify-content:center;margin:14px 0 4px}
@@ -478,6 +479,7 @@ p{text-wrap:pretty}
 
 /* ======== 6.6.1 Форматы поставки ======== */
 .format-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+.format-grid.two{grid-template-columns:repeat(2,1fr)}
 .format{display:flex;flex-direction:column;overflow:hidden;background:#fff;
   border:1px solid var(--line);border-radius:var(--r-l);box-shadow:var(--sh-1);
   transition:transform var(--t-mid) var(--e-out),box-shadow var(--t-mid) var(--e-out)}
@@ -979,6 +981,22 @@ table.data td strong{color:var(--ink);font-weight:700}
   box-shadow:var(--sh-4);font-size:15px;max-width:min(92vw,460px);text-align:center;
   opacity:0;transition:opacity .3s linear,transform .45s var(--e-out)}
 .toast.show{opacity:1;transform:translate(-50%,0)}
+
+/* ======== 6.20.1 Окно заказа ======== */
+.modal{border:0;padding:0;background:transparent;max-width:min(520px,calc(100vw - 32px));
+  max-height:min(88vh,860px);overflow:visible;color:var(--ink)}
+.modal::backdrop{background:rgba(15,25,34,.5);backdrop-filter:blur(4px)}
+.modal-card{position:relative;background:#fff;border-radius:var(--r-l);box-shadow:var(--sh-4);
+  padding:clamp(24px,4vw,34px);max-height:min(88vh,860px);overflow:auto}
+.modal-card h3{font-size:23px;letter-spacing:-.02em;padding-right:38px}
+.modal-close{position:absolute;top:16px;right:16px;width:34px;height:34px;border-radius:50%;
+  display:grid;place-items:center;background:var(--mist);color:var(--gray);
+  transition:background-color var(--t-fast) linear,color var(--t-fast) linear}
+.modal-close .i{--i-size:18px;transform:rotate(45deg)}
+.modal-close:hover{background:var(--ink);color:#fff}
+.modal[open]{animation:modal-in .3s var(--e-out)}
+@keyframes modal-in{from{opacity:0;transform:translateY(14px) scale(.985)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.modal[open]{animation:none}}
 
 /* ======== 6.21.1 Регалии колонкой в герое ======== */
 /* Показывается только на широких экранах — там слева от заголовка есть свободное

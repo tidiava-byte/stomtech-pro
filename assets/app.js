@@ -338,6 +338,31 @@
   }
 
   /* ---------------------------------------------------------
+     Окно заказа: кнопки «Сделать заказ» открывают форму поверх страницы.
+     Сами кнопки остаются ссылками на zakaz.html — если <dialog> не поддержан
+     или скрипт не доехал, посетитель просто уходит на страницу заказа.
+     --------------------------------------------------------- */
+  function initOrderModal() {
+    var modal = document.getElementById('order-modal');
+    if (!modal || typeof modal.showModal !== 'function') return;
+
+    $$('[data-order]').forEach(function (btn) {
+      btn.addEventListener('click', function (e) {
+        e.preventDefault();
+        modal.showModal();
+        var first = $('input', modal);
+        if (first) first.focus();
+      });
+    });
+
+    $$('[data-close]', modal).forEach(function (b) {
+      b.addEventListener('click', function () { modal.close(); });
+    });
+    // клик по затемнению вне карточки закрывает окно
+    modal.addEventListener('click', function (e) { if (e.target === modal) modal.close(); });
+  }
+
+  /* ---------------------------------------------------------
      Заявки: собираем текст и отправляем в Telegram или на почту
      --------------------------------------------------------- */
   function initForms() {
@@ -378,6 +403,8 @@
         }
         form.reset();
         $$('.qty-ctl span', form).forEach(function (s) { s.textContent = '0'; });
+        var dlg = form.closest('dialog');
+        if (dlg && dlg.open) dlg.close();
       });
     });
   }
@@ -412,6 +439,7 @@
     initArticle();
     initBlogFilter();
     initFab();
+    initOrderModal();
     initForms();
     var y = document.getElementById('year');
     if (y) y.textContent = new Date().getFullYear();

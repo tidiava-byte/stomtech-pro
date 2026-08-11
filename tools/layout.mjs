@@ -23,6 +23,25 @@ const V = { css: rev('style.css'), icons: rev('icons.css'), js: rev('app.js') };
 const OG_FILE = 'og-cover.jpg';
 const HAS_OG = existsSync(join(ASSETS, 'img', OG_FILE));
 
+/* Яндекс.Метрика. Номер счётчика — в одном месте: меняется здесь, попадает на все страницы.
+   Пустая строка полностью убирает счётчик из сборки (например, для локального просмотра).
+   dataLayer объявляем до инициализации: без него не заработает электронная коммерция,
+   которую счётчик уже ждёт (ecommerce:"dataLayer") — пригодится, когда появится корзина.
+   Счётчик разнесён на две части: скрипт — в <head> (считает раньше), пиксель-заглушка
+   для отключённого JS — в начало <body>. Держать <noscript><div><img> внутри <head> нельзя:
+   браузер на первом же <div> закрывает голову и начинает тело — вёрстка поедет. */
+const METRIKA_ID = '111496189';
+const metrikaHead = () => METRIKA_ID ? `
+<script>window.dataLayer=window.dataLayer||[];
+(function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
+m[i].l=1*new Date();for(var j=0;j<document.scripts.length;j++){if(document.scripts[j].src===r){return}}
+k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)
+})(window,document,'script','https://mc.yandex.ru/metrika/tag.js?id=${METRIKA_ID}','ym');
+ym(${METRIKA_ID},'init',{ssr:true,webvisor:true,clickmap:true,ecommerce:"dataLayer",referrer:document.referrer,url:location.href,accurateTrackBounce:true,trackLinks:true});</script>` : '';
+const metrikaBody = () => METRIKA_ID
+  ? `<noscript><div><img src="https://mc.yandex.ru/watch/${METRIKA_ID}" style="position:absolute;left:-9999px" alt=""></div></noscript>\n`
+  : '';
+
 export const SITE = {
   name: 'STOMTECH PRO',
   // Адрес, где сайт реально лежит. От него считаются canonical, sitemap и og:image.
@@ -91,7 +110,7 @@ function head(m) {
 Если app.js не доехал (кэш, блокировщик, ошибка), сторож через 2,5 с показывает всё как есть:
 пустой страницы не будет ни при каких обстоятельствах. */
 (function(h){h.classList.add('js');
-window.__revealGuard=setTimeout(function(){h.classList.add('no-motion')},2500)})(document.documentElement)</script>${m.jsonld ? `\n<script type="application/ld+json">${JSON.stringify(m.jsonld)}</script>` : ''}`;
+window.__revealGuard=setTimeout(function(){h.classList.add('no-motion')},2500)})(document.documentElement)</script>${metrikaHead()}${m.jsonld ? `\n<script type="application/ld+json">${JSON.stringify(m.jsonld)}</script>` : ''}`;
 }
 
 /* ---------- шапка ---------- */
@@ -103,12 +122,12 @@ function header(active) {
   <div class="container nav">
     <a href="index.html" class="brand" aria-label="STOMTECH PRO — на главную"><img src="assets/img/logo.svg" alt="STOMTECH PRO" width="150" height="23"></a>
     <nav class="nav-links" aria-label="Основное меню">
-      <a href="zakaz.html" class="nav-only-mobile">Сделать заказ</a>
+      <a href="zakaz.html" class="nav-only-mobile" data-order>Сделать заказ</a>
 ${links}
     </nav>
     <div class="nav-cta">
       <a href="${SITE.phoneHref}" class="nav-phone"><i class="i i-phone" aria-hidden="true"></i>${SITE.phone}</a>
-      <a href="zakaz.html" class="btn btn-primary btn-sm">Сделать заказ</a>
+      <a href="zakaz.html" class="btn btn-primary btn-sm" data-order>Сделать заказ</a>
       <button class="burger" type="button" aria-label="Открыть меню"><span></span><span></span><span></span></button>
     </div>
   </div>
@@ -161,6 +180,45 @@ function footer() {
 </footer>`;
 }
 
+/* ---------- окно заказа ----------
+   Кнопки «Сделать заказ» открывают форму прямо поверх страницы: заявка не должна
+   стоить посетителю лишнего перехода. Кнопки при этом остаются ссылками на zakaz.html —
+   если JS не доехал, они просто уводят на страницу заказа, как раньше. */
+function orderModal() {
+  const qty = (name, label) => `        <div class="qty-row" data-name="${name}">
+          <span>${label}</span>
+          <span class="qty-ctl">
+            <button type="button" data-step="-" aria-label="Убрать: ${label}"><i class="i i-minus" aria-hidden="true"></i></button>
+            <span>0</span>
+            <button type="button" data-step="+" aria-label="Добавить: ${label}"><i class="i i-plus" aria-hidden="true"></i></button>
+          </span>
+        </div>`;
+  return `<dialog class="modal" id="order-modal" aria-labelledby="order-modal-title">
+  <div class="modal-card">
+    <button type="button" class="modal-close" data-close aria-label="Закрыть"><i class="i i-plus" aria-hidden="true"></i></button>
+    <h3 id="order-modal-title">Заявка на заказ</h3>
+    <p class="note mt-xs" style="margin-bottom:20px">Заполните форму — свяжемся в течение рабочего дня и подтвердим наличие, стоимость и срок доставки.</p>
+    <form data-lead="Заказ с главной">
+      <div class="field"><label for="m-name">Имя *</label><input id="m-name" type="text" name="name" data-label="Имя" required autocomplete="name" placeholder="Как к вам обращаться"></div>
+      <div class="field"><label for="m-clinic">Клиника или ИП *</label><input id="m-clinic" type="text" name="clinic" data-label="Клиника" required autocomplete="organization" placeholder="Название и город"></div>
+      <div class="field"><label for="m-phone">Телефон *</label><input id="m-phone" type="tel" name="phone" data-label="Телефон" required autocomplete="tel" placeholder="+7 (___) ___-__-__"></div>
+
+      <p class="note" style="margin:20px 0 4px">Что отгрузить</p>
+${qty('ULTRA 14 мкм · 170 г', 'ULTRA · 14 мкм · 170 г')}
+${qty('DELICATE 30 мкм · 170 г', 'DELICATE · 30 мкм · 170 г')}
+${qty('HARD 40 мкм · 300 г', 'HARD · 40 мкм · 300 г')}
+${qty('Комплект из трёх флаконов', 'Комплект в коробке · 3 флакона')}
+
+      <div class="field" style="margin-top:20px"><label for="m-note">Комментарий</label><input id="m-note" type="text" name="comment" data-label="Комментарий" placeholder="Наконечник, объём, сроки"></div>
+      <label class="consent"><input type="checkbox" required>
+        Согласен(на) на обработку персональных данных для обратной связи.</label>
+      <button type="submit" class="btn btn-primary btn-lg" style="width:100%;margin-top:18px">Отправить заявку <i class="i i-arrow-right" aria-hidden="true"></i></button>
+      <p class="note center mt-s">Не знаете, какая фракция нужна? Оставьте нули и опишите задачу — подберём.</p>
+    </form>
+  </div>
+</dialog>`;
+}
+
 /* ---------- сборка страницы ---------- */
 export function page(meta, body) {
   return `<!DOCTYPE html>
@@ -170,13 +228,14 @@ export function page(meta, body) {
 ${head(meta)}
 </head>
 <body>
-${meta.progress ? '<div class="read-progress" aria-hidden="true"></div>\n' : ''}${header(meta.nav)}
+${metrikaBody()}${meta.progress ? '<div class="read-progress" aria-hidden="true"></div>\n' : ''}${header(meta.nav)}
 
 ${body.trim()}
 
 ${footer()}
 
 <a href="${SITE.tg}" class="fab" aria-label="Написать в Telegram" rel="noopener"><i class="i i-chat" aria-hidden="true"></i></a>
+${meta.slug === 'zakaz' ? '' : orderModal()}
 <script src="assets/app.js?v=${V.js}"></script>
 </body>
 </html>
