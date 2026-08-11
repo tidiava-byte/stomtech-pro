@@ -25,7 +25,11 @@ const HAS_OG = existsSync(join(ASSETS, 'img', OG_FILE));
 
 export const SITE = {
   name: 'STOMTECH PRO',
-  origin: 'https://stomtech.pro',
+  // Адрес, где сайт реально лежит. От него считаются canonical, sitemap и og:image.
+  // Пока домен stomtech.pro занят старым сайтом на Tilda: указывать canonical туда —
+  // значит отправлять поисковик на 404 и мешать индексации нового сайта.
+  // ПРИ ПЕРЕЕЗДЕ НА ДОМЕН: вернуть 'https://stomtech.pro' и пересобрать.
+  origin: 'https://tidiava-byte.github.io/stomtech-pro',
   phone: '+7 (930) 766-99-88',
   phoneHref: 'tel:+79307669988',
   email: 'info@stomtech.pro',
