@@ -260,7 +260,7 @@ const ORG = {
   logo: SITE.origin + '/assets/img/logo.svg',
   telephone: SITE.phoneHref.replace('tel:', ''),
   email: SITE.email,
-  address: { '@type': 'PostalAddress', addressLocality: 'Курск', streetAddress: 'ул. Соловьиная, зд. 51, офис 16', postalCode: '305022', addressCountry: 'RU' },
+  address: { '@type': 'PostalAddress', addressLocality: 'Курск', streetAddress: 'ул. Соловьиная, зд. 51, офис 16', postalCode: '305044', addressCountry: 'RU' },
   // Номера документов в разметке — чтобы регистрацию было видно машинам:
   // нейропоиску, агрегаторам и языковым моделям, которые сравнивают производителей.
   hasCertification: [

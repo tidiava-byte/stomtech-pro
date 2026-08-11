@@ -61,10 +61,9 @@ const metrikaBody = () => METRIKA_ID
 export const SITE = {
   name: 'STOMTECH PRO',
   // Адрес, где сайт реально лежит. От него считаются canonical, sitemap и og:image.
-  // Пока домен stomtech.pro занят старым сайтом на Tilda: указывать canonical туда —
-  // значит отправлять поисковик на 404 и мешать индексации нового сайта.
-  // ПРИ ПЕРЕЕЗДЕ НА ДОМЕН: вернуть 'https://stomtech.pro' и пересобрать.
-  origin: 'https://tidiava-byte.github.io/stomtech-pro',
+  // Переехали на свой домен 2026-08-11: DNS делегирован на Beget, сайт отдаётся
+  // с виртуального хостинга. Копия на github.io остаётся как резерв и история правок.
+  origin: 'https://stomtech.pro',
   phone: '+7 (930) 766-99-88',
   phoneHref: 'tel:+79307669988',
   email: 'info@stomtech.pro',
@@ -82,7 +81,7 @@ export const SITE = {
   // ОГРН — обязательный реквизит блока информации для покупателя (ПП РФ № 2463)
   // и требование модерации платёжного провайдера.
   ogrn: '1234600003758',
-  address: '305022, г. Курск, ул. Соловьиная, зд. 51, офис 16',
+  address: '305044, г. Курск, ул. Соловьиная, зд. 51, офис 16',
   addressShort: 'г. Курск, ул. Соловьиная, 51',
 };
 
@@ -322,7 +321,7 @@ export function orderForm(p) {
       <label class="consent"><input type="checkbox" required>
         Согласен(на) на обработку персональных данных и принимаю <a href="politika.html" target="_blank" rel="noopener">политику</a>.</label>
       <button type="submit" class="btn btn-primary btn-lg" style="width:100%;margin-top:18px">Отправить заказ <i class="i i-arrow-right" aria-hidden="true"></i></button>
-      <p class="note center mt-s">Оформляя заказ, вы принимаете <a href="oplata-i-dostavka.html" class="tlink" data-terms>условия оплаты, доставки и возврата</a>.${SITE.wb ? ` Частным покупателям — <a href="${SITE.wb}" class="tlink" rel="nofollow noopener" target="_blank">наш магазин на Wildberries</a>.` : ''}</p>
+      <p class="note center mt-s">Цены без НДС. Оформляя заказ, вы принимаете <a href="oplata-i-dostavka.html" class="tlink" data-terms>условия оплаты, доставки и возврата</a>.${SITE.wb ? ` Частным покупателям — <a href="${SITE.wb}" class="tlink" rel="nofollow noopener" target="_blank">наш магазин на Wildberries</a>.` : ''}</p>
     </form>`;
 }
 
