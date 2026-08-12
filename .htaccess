@@ -27,14 +27,42 @@ DirectoryIndex index.html
   # бы лишний переход http → https.
   # В индексе поисковиков было три адреса. Главная совпадает, две страницы
   # переносим на ближайшие по смыслу — иначе накопленный вес уйдёт в 404.
-  RewriteRule ^documents/?$ https://stomtech.pro/dokumenty.html [R=301,L]
-  RewriteRule ^lp/?$ https://stomtech.pro/catalog.html [R=301,L]
+  RewriteRule ^documents/?$ https://stomtech.pro/dokumenty [R=301,L]
+  RewriteRule ^lp/?$ https://stomtech.pro/catalog [R=301,L]
 
   # ---------- Переезды внутри нового сайта ----------
+  # Идут ДО общего правила «убрать .html»: иначе /probnik.html сначала
+  # превратился бы в /probnik, для которого файла нет, и мы получили бы 404
+  # вместо перехода на страницу заказа.
   # Страница пробника удалена 2026-08-11: пробников больше нет.
-  RewriteRule ^probnik\.html$ https://stomtech.pro/zakaz.html [R=301,L]
+  RewriteRule ^probnik(\.html)?$ https://stomtech.pro/zakaz [R=301,L]
   # Статья переименована: название GBT — запатентованный протокол EMS.
-  RewriteRule ^blog-gbt-protokol\.html$ https://stomtech.pro/blog-protokol-procedury.html [R=301,L]
+  RewriteRule ^blog-gbt-protokol(\.html)?$ https://stomtech.pro/blog-protokol-procedury [R=301,L]
+
+  # ---------- Адреса без .html ----------
+  # Снаружи сайт живёт по адресам вида /oferta. Файлы на диске остаются
+  # с расширением — их подставляет последнее правило этого блока.
+  #
+  # Проверяем THE_REQUEST (исходную строку запроса браузера), а не путь:
+  # если проверять путь, внутренняя подстановка .html снова попадёт под это
+  # правило и получится бесконечный редирект.
+  RewriteCond %{THE_REQUEST} \s/+index\.html[\s?] [NC]
+  RewriteRule ^ https://stomtech.pro/ [R=301,L]
+
+  RewriteCond %{THE_REQUEST} \s/+([^\s?]+)\.html[\s?] [NC]
+  RewriteRule ^ https://stomtech.pro/%1 [R=301,L]
+
+  # Слэш на конце страницы не нужен: /oferta/ и /oferta — это две копии
+  # одной страницы для поисковика.
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteRule ^(.+)/$ https://stomtech.pro/$1 [R=301,L]
+
+  # Собственно подстановка файла: /oferta отдаёт oferta.html.
+  # Проверка -f обязательна, иначе под правило попадут картинки и стили.
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteCond %{DOCUMENT_ROOT}/$1.html -f
+  RewriteRule ^(.+?)/?$ $1.html [L]
 </IfModule>
 
 ErrorDocument 404 /404.html

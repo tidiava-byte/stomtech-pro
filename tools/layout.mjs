@@ -116,6 +116,13 @@ export const AUTHORS = {
   },
 };
 
+/* Адрес страницы на сайте. Расширения в адресах нет: `/oferta`, а не `/oferta.html`.
+   Файлы на диске остаются с расширением — подставляет их `.htaccess` на хостинге,
+   а при локальном просмотре `node tools/serve.mjs`.
+   Единственное место, где адрес страницы собирается: отсюда его берут canonical,
+   og:url, микроразметка, карта сайта и кнопки «поделиться». */
+export const pagePath = (slug) => (slug === 'index' ? '/' : `/${slug}`);
+
 /* ---------- <head> ----------
    Иконки. Порядок важен и лечит две разные болезни:
    • `favicon.ico` в корне сайта — единственный адрес, который браузеры, Телеграм
@@ -126,7 +133,7 @@ export const AUTHORS = {
    Отпечаток `?v=` у SVG и apple-touch-icon поднят до 3: иконки браузеры кэшируют
    особенно упрямо, смена адреса — единственный надёжный способ их обновить. */
 function head(m) {
-  const canonical = `${SITE.origin}/${m.slug === 'index' ? '' : m.slug + '.html'}`;
+  const canonical = SITE.origin + pagePath(m.slug);
   const og = m.ogTitle || m.title;
   return `<meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">

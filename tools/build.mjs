@@ -15,7 +15,25 @@
 import { readdirSync, readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { SITE, AUTHORS, RETAIL, page, ctaBand, orderForm, termsBlock } from './layout.mjs';
+import { SITE, AUTHORS, RETAIL, pagePath, page, ctaBand, orderForm, termsBlock } from './layout.mjs';
+
+/* ---------- адреса без .html ----------
+   В разметке страниц ссылки пишутся как обычно — `href="catalog.html"`: так их
+   видно в исходнике, и не приходится держать в голове две формы записи. Расширение
+   срезается один раз здесь, на готовой странице.
+
+   Почему это работает без правки путей к ассетам: все страницы лежат в корне,
+   поэтому у адреса `/oferta` базовый каталог — тот же корень, и относительный
+   `assets/style.css` по-прежнему указывает на `/assets/style.css`.
+
+   Ссылка на главную становится `/`: `index` в адресе не нужен, а относительная
+   форма из подстраницы читалась бы как `./` — менее очевидно.
+
+   Файлы на диске остаются с расширением. Сопоставление `/oferta` → `oferta.html`
+   делает `.htaccess` на хостинге и `tools/serve.mjs` при локальном просмотре. */
+const cleanUrls = (html) => html
+  .replace(/href="index\.html(#[^"]*)?"/g, 'href="/$1"')
+  .replace(/href="([a-z0-9-]+)\.html(#[^"]*)?"/g, 'href="$1$2"');
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const CONTENT = join(ROOT, 'tools', 'content');
@@ -83,7 +101,9 @@ function breadcrumbLd(body) {
       '@type': 'ListItem',
       position: i + 1,
       name: it.label,
-      ...(it.href ? { item: `${SITE.origin}/${it.href === 'index.html' ? '' : it.href}` } : {}),
+      // крошки вынуты из разметки, где ссылки ещё с расширением: срезаем его,
+      // чтобы адрес в микроразметке совпал с canonical
+      ...(it.href ? { item: SITE.origin + pagePath(it.href.replace(/\.html$/, '')) } : {}),
     })),
   };
 }
@@ -316,7 +336,7 @@ const DIRECTIVES = {
       </div>`;
   },
   share: (arg, meta) => {
-    const url = `${SITE.origin}/${meta.slug}.html`;
+    const url = SITE.origin + pagePath(meta.slug);
     return `<div class="share">
         <span>Поделиться</span>
         <a href="https://t.me/share/url?url=${encodeURIComponent(url)}" aria-label="Telegram" rel="noopener nofollow"><i class="i i-telegram" aria-hidden="true"></i></a>
@@ -394,7 +414,7 @@ function articleJsonLd(m) {
     inLanguage: 'ru-RU',
     author: { '@type': 'Organization', name: a.name },
     publisher: ORG,
-    mainEntityOfPage: { '@type': 'WebPage', '@id': `${SITE.origin}/${m.slug}.html` },
+    mainEntityOfPage: { '@type': 'WebPage', '@id': SITE.origin + pagePath(m.slug) },
   }];
   if (m.faq && m.faq.length) {
     graph.push({
@@ -424,7 +444,7 @@ for (const { meta, body } of all) {
   // крошки достаём из готовой разметки, чтобы не описывать их второй раз руками
   const extra = [breadcrumbLd(html), meta.slug === 'index' ? websiteLd() : null].filter(Boolean);
   if (extra.length) meta.jsonldExtra = extra;
-  writeFileSync(join(ROOT, `${meta.slug}.html`), page(meta, html), 'utf8');
+  writeFileSync(join(ROOT, `${meta.slug}.html`), cleanUrls(page(meta, html)), 'utf8');
   count++;
 }
 
@@ -434,7 +454,7 @@ const today = new Date().toISOString().slice(0, 10);
 const urls = all
   .filter((p) => !p.meta.noindex)
   .map((p) => ({
-    loc: `${SITE.origin}/${p.meta.slug === 'index' ? '' : p.meta.slug + '.html'}`,
+    loc: SITE.origin + pagePath(p.meta.slug),
     lastmod: p.meta.updated || p.meta.date || today,
     priority: p.meta.slug === 'index' ? '1.0' : p.meta.priority || (p.meta.type === 'article' ? '0.7' : '0.8'),
   }))

@@ -507,7 +507,7 @@
     bar.className = 'cookie-bar';
     bar.setAttribute('role', 'note');
     bar.innerHTML = '<p>Сайт использует файлы cookie: они нужны для работы корзины и для статистики посещаемости. ' +
-      'Подробнее — в <a href="politika.html">политике обработки персональных данных</a>.</p>' +
+      'Подробнее — в <a href="/politika">политике обработки персональных данных</a>.</p>' +
       '<button type="button" class="btn btn-primary btn-sm">Понятно</button>';
     document.body.appendChild(bar);
     // класс на body сдвигает плавающие кнопки вверх, чтобы полоса их не накрыла
