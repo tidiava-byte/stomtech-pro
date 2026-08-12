@@ -15,7 +15,7 @@
 import { readdirSync, readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { SITE, AUTHORS, page, ctaBand, orderForm, termsBlock } from './layout.mjs';
+import { SITE, AUTHORS, RETAIL, page, ctaBand, orderForm, termsBlock } from './layout.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const CONTENT = join(ROOT, 'tools', 'content');
@@ -325,8 +325,22 @@ const DIRECTIVES = {
   },
 };
 
+/* Область, которая существует только при включённой рознице:
+     <!-- @retail --> … <!-- /@retail -->
+   Пока RETAIL === false (флаг в tools/layout.mjs), содержимое вырезается из страницы
+   целиком — вместе с маркерами. Так розничный раздел оферты пишется и хранится вместе
+   с остальным текстом, а не в отдельном файле, но не показывается посетителю до того,
+   как сайт научится принимать оплату от физлица.
+   Обрабатывается до expand(): к моменту разбора директив маркеров уже нет. */
+function retailRegions(body) {
+  return body.replace(
+    /<!--\s*@retail\s*-->([\s\S]*?)<!--\s*\/@retail\s*-->/g,
+    (all, inner) => (RETAIL ? inner : '')
+  );
+}
+
 function expand(body, meta) {
-  return body.replace(/<!--\s*@(\w+)\s*([\s\S]*?)\s*-->/g, (full, name, arg) => {
+  return retailRegions(body).replace(/<!--\s*@(\w+)\s*([\s\S]*?)\s*-->/g, (full, name, arg) => {
     const fn = DIRECTIVES[name];
     if (!fn) throw new Error(`${meta.src}: неизвестная директива @${name}`);
     return fn(arg, meta);

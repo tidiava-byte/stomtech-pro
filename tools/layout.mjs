@@ -210,6 +210,7 @@ function footer() {
         <a href="o-kompanii.html">О компании</a>
         <a href="dokumenty.html">Документы</a>
         <a href="oplata-i-dostavka.html">Оплата и доставка</a>
+        <a href="oferta.html">Публичная оферта</a>
         <a href="gde-kupit.html">Где купить</a>
         <a href="dileram.html">Дилерам</a>
         <a href="blog.html">Блог</a>
@@ -221,11 +222,11 @@ function footer() {
         <p>${SITE.address}</p>
       </div>
     </div>
-    <p class="foot-legal">Порошки для воздушно-абразивной обработки — медицинское изделие. Имеются противопоказания, необходима консультация специалиста. Информация на сайте не является публичной офертой.</p>
+    <p class="foot-legal">Порошки для воздушно-абразивной обработки — медицинское изделие. Имеются противопоказания, необходима консультация специалиста. Информация о товарах на сайте носит справочный характер; условия сделки определяются счётом и публичной офертой.</p>
     <div class="foot-bottom">
       <span>© <span id="year">2026</span> ${SITE.legal} · ИНН ${SITE.inn} · ОГРН ${SITE.ogrn}</span>
       <a href="politika.html">Политика обработки персональных данных</a>
-      <span>Производство полного цикла в России</span>
+      <a href="oferta.html">Публичная оферта</a>
     </div>
   </div>
 </footer>`;
@@ -373,7 +374,7 @@ export function orderForm(p) {
       <label class="consent"><input type="checkbox" required>
         Согласен(на) на обработку персональных данных и принимаю <a href="politika.html" target="_blank" rel="noopener">политику</a>.</label>
       <button type="submit" class="btn btn-primary btn-lg" style="width:100%;margin-top:18px">Отправить заказ <i class="i i-arrow-right" aria-hidden="true"></i></button>
-      <p class="note center mt-s">Цены без НДС. Оформляя заказ, вы принимаете <a href="oplata-i-dostavka.html" class="tlink" data-terms>условия оплаты, доставки и возврата</a>.${SITE.wb ? ` Частным покупателям — <a href="${SITE.wb}" class="tlink" rel="nofollow noopener" target="_blank">наш магазин на Wildberries</a>.` : ''}</p>
+      <p class="note center mt-s">Цены без НДС. Заявка ни к чему не обязывает: договор заключается оплатой счёта на условиях <a href="oferta.html" class="tlink">публичной оферты</a> и <a href="oplata-i-dostavka.html" class="tlink" data-terms>условий доставки и возврата</a>.${SITE.wb ? ` Частным покупателям — <a href="${SITE.wb}" class="tlink" rel="nofollow noopener" target="_blank">наш магазин на Wildberries</a>.` : ''}</p>
     </form>`;
 }
 
