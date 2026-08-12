@@ -19,9 +19,12 @@ const V = { css: rev('style.css'), icons: rev('icons.css'), js: rev('app.js') };
 
 /* Картинка-превью для мессенджеров и соцсетей. Появится в <head> сама, как только
    файл assets/img/og-cover.jpg будет положен на место (промпт — в PHOTO-PROMPTS.md).
-   Пока файла нет, теги не выводятся: пустой og:image хуже, чем его отсутствие. */
+   Пока файла нет, теги не выводятся: пустой og:image хуже, чем его отсутствие.
+   Отпечаток в адресе обязателен: Telegram, VK и WhatsApp кэшируют превью по URL
+   и держат старую картинку месяцами — без смены адреса новая обложка не доедет. */
 const OG_FILE = 'og-cover.jpg';
 const HAS_OG = existsSync(join(ASSETS, 'img', OG_FILE));
+const OG_REV = HAS_OG ? rev(join('img', OG_FILE)) : '';
 
 /* Товары для корзины. Тот же tools/products.json, что и для цен на страницах, —
    витрина и корзина обязаны считать по одному прайсу. В браузер уходит только
@@ -153,7 +156,7 @@ ${m.noindex ? `<meta name="robots" content="noindex, follow">
 <meta property="og:title" content="${og}">
 <meta property="og:description" content="${m.ogDescription || m.description}">
 <meta property="og:url" content="${canonical}">${HAS_OG ? `
-<meta property="og:image" content="${SITE.origin}/assets/img/${OG_FILE}">
+<meta property="og:image" content="${SITE.origin}/assets/img/${OG_FILE}?v=${OG_REV}">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">` : ''}
