@@ -1,0 +1,27 @@
+# Приём заявок. Наружу открыт ровно один файл — order.php.
+# Всё остальное в этой папке (настройки с ключом вебхука, сохранённые заявки,
+# журнал ошибок) по сети не отдаётся.
+
+<FilesMatch "\.(php|json|log)$">
+  Require all denied
+</FilesMatch>
+
+<Files "order.php">
+  Require all granted
+</Files>
+
+# На Apache 2.2 директивы Require не работают — дублируем старым синтаксисом.
+# Лишним не будет: сервер применит тот блок, который понимает.
+<IfModule !mod_authz_core.c>
+  <FilesMatch "\.(php|json|log)$">
+    Order allow,deny
+    Deny from all
+  </FilesMatch>
+  <Files "order.php">
+    Order allow,deny
+    Allow from all
+  </Files>
+</IfModule>
+
+# Сохранённые заявки — персональные данные. Каталог закрыт целиком.
+RedirectMatch 404 ^/api/orders/

@@ -448,6 +448,20 @@ for (const { meta, body } of all) {
   count++;
 }
 
+/* ---------- прайс для обработчика заявок ----------
+   api/order.php пересчитывает сумму заказа сам: цены из браузера не принимаются
+   никогда. Но папка tools/ на хостинг не уезжает, поэтому копия прайса кладётся
+   рядом с обработчиком. Источник правды по-прежнему один — tools/products.json. */
+writeFileSync(
+  join(ROOT, 'api', 'products.json'),
+  JSON.stringify(
+    { updated: PRODUCTS.updated, items: PRODUCTS.items.map(({ sku, title, price, weight, b24ProductId }) =>
+      ({ sku, title, price, weight, b24ProductId })) },
+    null, 2
+  ),
+  'utf8'
+);
+
 /* ---------- sitemap ---------- */
 const today = new Date().toISOString().slice(0, 10);
 // страницы с noindex в карту сайта не попадают: 404 незачем предлагать поисковику

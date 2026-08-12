@@ -378,6 +378,11 @@ export function orderForm(p) {
       </div>
       <div class="field"><label for="${p}-note">Комментарий</label><input id="${p}-note" type="text" name="comment" data-label="Комментарий" placeholder="Наконечник, объём, сроки доставки"></div>
 
+      <!-- Ловушка для роботов: поле спрятано стилями и не попадает в фокус с клавиатуры.
+           Человек его не видит и не заполнит, робот заполняет всё подряд. Заполненную
+           заявку сервер принимает молча и выбрасывает. -->
+      <div class="hp" aria-hidden="true"><label>Сайт<input type="text" name="website" tabindex="-1" autocomplete="off"></label></div>
+
       <label class="consent"><input type="checkbox" required>
         Согласен(на) на обработку персональных данных и принимаю <a href="politika.html" target="_blank" rel="noopener">политику</a>.</label>
       <button type="submit" class="btn btn-primary btn-lg" style="width:100%;margin-top:18px">Отправить заказ <i class="i i-arrow-right" aria-hidden="true"></i></button>

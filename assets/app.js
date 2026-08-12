@@ -7,7 +7,6 @@
   'use strict';
 
   var TG_URL = 'https://t.me/stomtechpro';
-  var EMAIL = 'info@stomtech.pro';
 
   var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var $ = function (s, r) { return (r || document).querySelector(s); };
@@ -668,8 +667,34 @@
   }
 
   /* ---------------------------------------------------------
-     Заявки: собираем текст и отправляем в Telegram или на почту
+     Заявки: уходят на сервер, оттуда — в Битрикс24
+
+     Раньше форма ничего не отправляла: собирала текст, открывала Telegram
+     и просила посетителя вставить его руками. В CRM при этом не попадало
+     ничего. Теперь заявка уходит на /api/order, а обработчик заводит
+     компанию, контакт, сделку с позициями и счёт.
+
+     Резервный путь оставлен: если сервер не ответил, форма не молчит,
+     а предлагает написать в Telegram — терять заявку из-за сбоя нельзя.
      --------------------------------------------------------- */
+  var ORDER_URL = '/api/order';
+
+  function leadText(form, title) {
+    var lines = ['Заявка с сайта STOMTECH PRO'];
+    if (title) lines.push('Тип: ' + title);
+    lines.push('—————————');
+    $$('input,select,textarea', form).forEach(function (f) {
+      if (f.type === 'checkbox' || !f.name || f.name === 'website' || !f.value.trim()) return;
+      lines.push((f.getAttribute('data-label') || f.name) + ': ' + f.value.trim());
+    });
+    $$('.qty-row', form).forEach(function (row) {
+      var nm = row.getAttribute('data-name');
+      var q = $('.qty-ctl span', row);
+      if (nm && q && parseInt(q.textContent, 10) > 0) lines.push(nm + ': ' + q.textContent + ' шт');
+    });
+    return lines.join('\n');
+  }
+
   function initForms() {
     $$('form[data-lead]').forEach(function (form) {
       form.addEventListener('submit', function (e) {
@@ -681,46 +706,69 @@
           return;
         }
 
-        var title = form.getAttribute('data-lead');
-        var lines = ['Заявка с сайта STOMTECH PRO'];
-        if (title) lines.push('Тип: ' + title);
-        lines.push('—————————');
+        var btn = form.querySelector('button[type=submit]');
+        if (btn && btn.disabled) return;              // защита от двойного нажатия
+        var btnHtml = btn ? btn.innerHTML : '';
+        if (btn) { btn.disabled = true; btn.textContent = 'Отправляем…'; }
 
+        var title = form.getAttribute('data-lead') || 'Заявка';
+        var data = { form: title, consent: true, page: location.pathname, items: [] };
         $$('input,select,textarea', form).forEach(function (f) {
-          if (f.type === 'checkbox' || !f.name || !f.value.trim()) return;
-          lines.push((f.getAttribute('data-label') || f.name) + ': ' + f.value.trim());
-        });
-        $$('.qty-row', form).forEach(function (row) {
-          var nm = row.getAttribute('data-name');
-          var q = $('.qty-ctl span', row);
-          if (nm && q && parseInt(q.textContent, 10) > 0) lines.push(nm + ': ' + q.textContent + ' шт');
+          if (f.type === 'checkbox' || !f.name) return;
+          if (f.type === 'radio' && !f.checked) return;
+          data[f.name] = f.value.trim();
         });
 
-        var text = lines.join('\n');
-        if (confirm('Отправить заявку через Telegram?\n\nОК — Telegram, Отмена — по почте.')) {
-          if (navigator.clipboard) navigator.clipboard.writeText(text).catch(function () {});
-          window.open(TG_URL, '_blank', 'noopener');
-          toast('Открываем Telegram — текст заявки скопирован, вставьте в чат');
-        } else {
-          window.location.href = 'mailto:' + EMAIL +
-            '?subject=' + encodeURIComponent('Заявка с сайта' + (title ? ' — ' + title : '')) +
-            '&body=' + encodeURIComponent(text);
+        // В корзине сервер доверяет только артикулу и количеству: цену
+        // и сумму он считает сам по своему прайсу.
+        var cart = form.hasAttribute('data-cart-form') ? cartRead() : {};
+        Object.keys(cart).forEach(function (sku) {
+          if (cart[sku] > 0) data.items.push({ sku: sku, qty: cart[sku] });
+        });
+
+        // Ключ повторной отправки: если посетитель нажмёт кнопку дважды
+        // или у него моргнёт сеть, второй заказ в CRM не появится.
+        data.idempotencyKey = String(Date.now()) + '-' + Math.random().toString(36).slice(2, 10);
+
+        function restore() {
+          if (btn) { btn.disabled = false; btn.innerHTML = btnHtml; }
         }
-        // Заказ ушёл — фиксируем покупку в аналитике и очищаем корзину,
-        // иначе следующая заявка уедет с теми же позициями.
-        if (form.hasAttribute('data-cart-form')) {
-          var cart = cartRead();
-          var skus = Object.keys(cart);
-          if (skus.length) {
-            ecommerce('purchase', skus.map(function (s) { return { sku: s, qty: cart[s] }; }));
-            cartWrite({});
+
+        function accepted() {
+          if (form.hasAttribute('data-cart-form')) {
+            var skus = Object.keys(cart);
+            if (skus.length) {
+              ecommerce('purchase', skus.map(function (s) { return { sku: s, qty: cart[s] }; }));
+              cartWrite({});
+            }
           }
+          form.reset();
+          $$('.qty-ctl span', form).forEach(function (s) { s.textContent = '0'; });
+          restore();
+          var dlg = form.closest('dialog');
+          if (dlg && dlg.open) dlg.close();
+          toast('Заявка принята. Свяжемся в течение рабочего дня и пришлём счёт');
         }
 
-        form.reset();
-        $$('.qty-ctl span', form).forEach(function (s) { s.textContent = '0'; });
-        var dlg = form.closest('dialog');
-        if (dlg && dlg.open) dlg.close();
+        fetch(ORDER_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data),
+        })
+          .then(function (r) { return r.json().catch(function () { return { ok: false }; }); })
+          .then(function (res) {
+            if (res && res.ok) { accepted(); return; }
+            restore();
+            toast(res && res.error ? res.error : 'Не получилось отправить — попробуйте ещё раз');
+          })
+          .catch(function () {
+            // Сервер недоступен. Заявку терять нельзя: кладём текст в буфер
+            // и открываем Telegram — это хуже автоматики, но лучше молчания.
+            restore();
+            if (navigator.clipboard) navigator.clipboard.writeText(leadText(form, title)).catch(function () {});
+            toast('Связь с сервером пропала. Текст заявки скопирован — отправьте нам в Telegram');
+            window.open(TG_URL, '_blank', 'noopener');
+          });
       });
     });
   }
