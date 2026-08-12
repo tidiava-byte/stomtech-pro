@@ -6,21 +6,21 @@
       "title": "ULTRA · 14 мкм · 170 г",
       "price": 1990,
       "weight": 170,
-      "b24ProductId": null
+      "b24ProductId": 15
     },
     {
       "sku": "DELICATE-170",
       "title": "DELICATE · 30 мкм · 170 г",
       "price": 1750,
       "weight": 170,
-      "b24ProductId": null
+      "b24ProductId": 19
     },
     {
       "sku": "HARD-300",
       "title": "HARD · 40 мкм · 300 г",
       "price": 890,
       "weight": 300,
-      "b24ProductId": null
+      "b24ProductId": 23
     },
     {
       "sku": "SET-3",

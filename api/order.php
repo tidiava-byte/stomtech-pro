@@ -68,6 +68,25 @@ if (strlen($raw) > 20000) fail('Слишком большая заявка');
 $in = json_decode($raw, true);
 if (!is_array($in)) fail('Не разобрали данные формы');
 
+/**
+ * Приводим телефон к виду +7XXXXXXXXXX.
+ *
+ * Людям привычно писать «8 930 …», «+7 (930) …» или просто десять цифр,
+ * а телефонии и CRM нужен один формат: иначе один и тот же человек заводится
+ * в базе дважды, а автодозвон не срабатывает.
+ *
+ * Номер, который явно не российский, не ломаем: возвращаем как есть с плюсом.
+ * Потерять заявку из ближнего зарубежья хуже, чем принять её в чужом формате.
+ */
+function normalize_phone($raw) {
+  $d = preg_replace('/[^0-9]/', '', $raw);
+  if ($d === '') return '';
+  $len = strlen($d);
+  if ($len === 11 && ($d[0] === '8' || $d[0] === '7')) return '+7' . substr($d, 1);
+  if ($len === 10) return '+7' . $d;
+  return '+' . $d;
+}
+
 function field($in, $key, $max) {
   $v = isset($in[$key]) ? trim((string) $in[$key]) : '';
   $v = preg_replace('/[\x00-\x08\x0B\x0C\x0E-\x1F]/u', '', $v);
@@ -87,7 +106,7 @@ if (!$consent) fail('Нужно согласие на обработку пер�
 $buyer   = field($in, 'buyer', 60);
 $isLegal = ($buyer !== 'Физическое лицо');
 $name    = field($in, 'name', 120);
-$phone   = field($in, 'phone', 40);
+$phone   = normalize_phone(field($in, 'phone', 40));
 $email   = field($in, 'email', 120);
 $comment = field($in, 'comment', 2000);
 $inn     = preg_replace('/\D/', '', field($in, 'inn', 20));
@@ -308,6 +327,8 @@ if (empty($cfg['b24_webhook'])) {
     'TITLE' => $dealTitle,
     'TYPE_ID' => 'SALE',
     'SOURCE_ID' => 'WEB',
+    // Воронка. Без неё сделка падает в воронку по умолчанию — «Склад лидов».
+    'CATEGORY_ID' => (int) $cfg['b24_deal_category'],
     'ASSIGNED_BY_ID' => $assigned,
     'OPENED' => 'Y',
     'CURRENCY_ID' => 'RUB',

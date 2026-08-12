@@ -14,7 +14,7 @@
       "price": 1990,
       "page": "ultra.html",
       "img": "assets/img/bottle-ultra.webp",
-      "b24ProductId": null
+      "b24ProductId": 15
     },
     {
       "sku": "DELICATE-170",
@@ -26,7 +26,7 @@
       "price": 1750,
       "page": "delicate.html",
       "img": "assets/img/bottle-delicate.webp",
-      "b24ProductId": null
+      "b24ProductId": 19
     },
     {
       "sku": "HARD-300",
@@ -38,7 +38,7 @@
       "price": 890,
       "page": "hard.html",
       "img": "assets/img/bottle-hard.webp",
-      "b24ProductId": null
+      "b24ProductId": 23
     },
     {
       "sku": "SET-3",
