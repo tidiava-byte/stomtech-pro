@@ -15,7 +15,7 @@
 import { readdirSync, readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { SITE, AUTHORS, RETAIL, pagePath, page, ctaBand, orderForm, termsBlock } from './layout.mjs';
+import { SITE, AUTHORS, DEFAULT_AUTHOR, RETAIL, pagePath, page, ctaBand, orderForm, termsBlock } from './layout.mjs';
 
 /* ---------- адреса без .html ----------
    В разметке страниц ссылки пишутся как обычно — `href="catalog.html"`: так их
@@ -286,6 +286,28 @@ function related(slug, n = 3) {
   return list.map((p) => postCard(p)).join('\n      ');
 }
 
+/* ---------- автор ----------
+   Имя, должность и фотография автора не пишутся в статьях руками: иначе смена
+   подписи означает правку двадцати файлов, а разъехавшиеся варианты подписи —
+   разные данные в тексте и в микроразметке. Источник один — AUTHORS в layout.mjs. */
+function authorOf(meta) {
+  return AUTHORS[meta.author || DEFAULT_AUTHOR] || AUTHORS[DEFAULT_AUTHOR];
+}
+
+/* Аватар: фотография, если она есть, иначе инициалы в круге (как было). */
+function avatar(a, size) {
+  if (!a.photo) return `<span class="av">${a.initials}</span>`;
+  const img = `<img src="${a.photo}" alt="${a.name}" width="${size}" height="${size}" loading="lazy">`;
+  return a.page ? `<a class="av ph" href="${a.page}.html" tabindex="-1" aria-hidden="true">${img}</a>`
+                : `<span class="av ph">${img}</span>`;
+}
+
+/* Имя со ссылкой на страницу автора — она же цель для микроразметки Person:
+   поисковику нужен адрес, где квалификация автора подтверждается. */
+function authorName(a) {
+  return a.page ? `<a href="${a.page}.html">${a.name}</a>` : a.name;
+}
+
 /* ---------- подстановки ----------
    Директивы пишутся HTML-комментарием: <!-- @имя аргумент -->
    Так они не конфликтуют со скобками JSON и не мешают, если сборку не запускать.
@@ -294,6 +316,7 @@ function related(slug, n = 3) {
      <!-- @blogCards 3 -->                N свежих карточек блога
      <!-- @blogIndex -->                  чипы рубрик + главная статья + сетка
      <!-- @related -->                    похожие статьи
+     <!-- @byline -->                     подпись автора в шапке статьи
      <!-- @share --> <!-- @author -->     блок «поделиться» и карточка автора
 ------------------------------------------------------------------ */
 /* Список мест под фотографии, которые ещё не сняты — собирается при сборке
@@ -336,12 +359,24 @@ const DIRECTIVES = {
   blogCards: (arg) => posts.slice(0, parseInt(arg, 10) || 3).map((p) => postCard(p)).join('\n      '),
   blogIndex: () => blogIndex(),
   related: (arg, meta) => related(meta.slug),
+  // подпись в шапке статьи
+  byline: (arg, meta) => {
+    const a = authorOf(meta);
+    return `<div class="author">
+          ${avatar(a, 42)}
+          <div>
+            <div class="nm">${authorName(a)}</div>
+            <div class="rl">${a.role}</div>
+          </div>
+        </div>`;
+  },
+  // карточка автора в конце статьи
   author: (arg, meta) => {
-    const a = AUTHORS[meta.author || 'expert'];
+    const a = authorOf(meta);
     return `<div class="author-card">
-        <div class="av">${a.initials}</div>
+        ${avatar(a, 60)}
         <div>
-          <div class="nm">${a.name}</div>
+          <div class="nm">${authorName(a)}</div>
           <div class="rl">${a.role}</div>
           <p>${a.bio}</p>
         </div>
@@ -415,8 +450,25 @@ const ORG = {
   ],
 };
 
+/* Автор в микроразметке. Для человека это Person с должностью, фотографией
+   и адресом страницы, где квалификацию можно проверить: именно связку
+   «имя → должность → подтверждающая страница» поисковики учитывают в оценке
+   экспертности медицинских материалов. */
+function authorLd(a) {
+  if (a.kind !== 'Person') return { '@type': 'Organization', name: a.name };
+  return {
+    '@type': 'Person',
+    name: a.name,
+    jobTitle: a.jobTitle || a.role,
+    ...(a.page ? { url: SITE.origin + pagePath(a.page) } : {}),
+    ...(a.photo ? { image: `${SITE.origin}/${a.photo}` } : {}),
+    ...(a.knowsAbout ? { knowsAbout: a.knowsAbout } : {}),
+    worksFor: { '@type': 'Organization', name: SITE.name, url: SITE.origin + '/' },
+  };
+}
+
 function articleJsonLd(m) {
-  const a = AUTHORS[m.author || 'expert'];
+  const a = authorOf(m);
   const graph = [{
     '@type': 'Article',
     headline: m.h1,
@@ -424,7 +476,7 @@ function articleJsonLd(m) {
     datePublished: m.date,
     dateModified: m.updated || m.date,
     inLanguage: 'ru-RU',
-    author: { '@type': 'Organization', name: a.name },
+    author: authorLd(a),
     publisher: ORG,
     mainEntityOfPage: { '@type': 'WebPage', '@id': SITE.origin + pagePath(m.slug) },
   }];
@@ -449,6 +501,14 @@ for (const { meta, body } of all) {
     meta.progress = true;
     meta.nav = 'blog';
     meta.jsonld = articleJsonLd(meta);
+  } else if (meta.authorPage) {
+    // Страница автора: ProfilePage — тип, которым поисковик отличает
+    // «страницу про человека» от обычной текстовой страницы.
+    meta.jsonld = {
+      '@context': 'https://schema.org',
+      '@type': 'ProfilePage',
+      mainEntity: authorLd(AUTHORS[meta.authorPage]),
+    };
   } else if (!meta.jsonld && meta.slug === 'index') {
     meta.jsonld = { '@context': 'https://schema.org', ...ORG };
   }

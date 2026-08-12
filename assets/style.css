@@ -838,12 +838,21 @@ table.data td strong{color:var(--ink);font-weight:700}
 .art-meta{display:flex;flex-wrap:wrap;align-items:center;gap:14px;margin-top:26px;
   font-size:14px;color:var(--gray)}
 .art-meta .sep{width:3px;height:3px;border-radius:50%;background:var(--gray-l)}
+/* Подпись автора живёт в двух местах — в шапке статьи (.author) и в карточке
+   под текстом (.author-card). Оформление у них общее, различаются только размеры,
+   поэтому базовые правила перечисляют оба контейнера. */
 .author{display:flex;align-items:center;gap:12px}
-.author .av{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;flex:none;
+.author .av,.author-card .av{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;flex:none;
   background:linear-gradient(140deg,var(--blue-l),var(--blue-d));color:#fff;
   font-weight:800;font-size:15px;letter-spacing:-.02em;box-shadow:var(--sh-1)}
-.author .nm{font-weight:600;color:var(--ink);font-size:14.5px;line-height:1.25}
-.author .rl{font-size:13px;color:var(--gray-l);line-height:1.25}
+/* фотография вместо инициалов: круг задан выше, здесь снимаем заливку
+   и подрезаем кадр — лицо на портрете 3:4 стоит выше центра */
+.author .av.ph,.author-card .av.ph{background:none;overflow:hidden;padding:0}
+.author .av.ph img,.author-card .av.ph img{width:100%;height:100%;object-fit:cover;object-position:50% 18%;display:block}
+.author .nm,.author-card .nm{font-weight:600;color:var(--ink);font-size:14.5px;line-height:1.25}
+.author .nm a,.author-card .nm a{color:inherit;text-decoration:none}
+.author .nm a:hover,.author-card .nm a:hover{color:var(--blue-d)}
+.author .rl,.author-card .rl{font-size:13px;color:var(--gray-l);line-height:1.25}
 
 /* карточка автора в конце статьи */
 .author-card{display:flex;gap:20px;align-items:flex-start;padding:26px 28px;margin-top:52px;

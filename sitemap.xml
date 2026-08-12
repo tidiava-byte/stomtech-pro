@@ -66,6 +66,26 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://stomtech.pro/sovmestimost-ems</loc>
+    <lastmod>2026-08-12</lastmod>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://stomtech.pro/sovmestimost-kavo</loc>
+    <lastmod>2026-08-12</lastmod>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://stomtech.pro/sovmestimost-nsk</loc>
+    <lastmod>2026-08-12</lastmod>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://stomtech.pro/sovmestimost-woodpecker</loc>
+    <lastmod>2026-08-12</lastmod>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://stomtech.pro/ultra</loc>
     <lastmod>2026-08-12</lastmod>
     <priority>0.8</priority>
@@ -169,6 +189,11 @@
     <loc>https://stomtech.pro/blog-poroshok-dlya-nakonechnika</loc>
     <lastmod>2026-06-02</lastmod>
     <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://stomtech.pro/avtor-olga-harlamova</loc>
+    <lastmod>2026-08-12</lastmod>
+    <priority>0.5</priority>
   </url>
   <url>
     <loc>https://stomtech.pro/oplata-i-dostavka</loc>
