@@ -440,8 +440,8 @@
 
     $$('[data-cart-empty]').forEach(function (el) { el.hidden = count > 0; });
     $$('[data-cart-total]').forEach(function (el) { el.hidden = count === 0; });
-    $('[data-cart-sum]').forEach(function (el) { el.textContent = rub(sum); });
-    $('[data-cart-note]').forEach(function (el) { el.hidden = !cartHasOnRequest(cart); });
+    $$('[data-cart-sum]').forEach(function (el) { el.textContent = rub(sum); });
+    $$('[data-cart-note]').forEach(function (el) { el.hidden = !cartHasOnRequest(cart); });
     $$('form[data-cart-form] input[name="total"]').forEach(function (el) {
       el.value = count ? rub(sum) : '';
     });
