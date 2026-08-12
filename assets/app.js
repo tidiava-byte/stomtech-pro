@@ -510,11 +510,14 @@
       'Подробнее — в <a href="politika.html">политике обработки персональных данных</a>.</p>' +
       '<button type="button" class="btn btn-primary btn-sm">Понятно</button>';
     document.body.appendChild(bar);
+    // класс на body сдвигает плавающие кнопки вверх, чтобы полоса их не накрыла
+    document.body.classList.add('has-cookie-bar');
     requestAnimationFrame(function () { bar.classList.add('show'); });
 
     $('button', bar).addEventListener('click', function () {
       try { localStorage.setItem(KEY, '1'); } catch (e) {}
       bar.classList.remove('show');
+      document.body.classList.remove('has-cookie-bar');
       setTimeout(function () { bar.remove(); }, 400);
     });
   }
