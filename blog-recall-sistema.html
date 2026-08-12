@@ -26,7 +26,7 @@
 <link rel="manifest" href="site.webmanifest">
 <link rel="preload" href="assets/fonts/onest-cyrillic-700.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="assets/fonts/onest-cyrillic-400.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="assets/style.css?v=bea7451f">
+<link rel="stylesheet" href="assets/style.css?v=7b933b99">
 <link rel="stylesheet" href="assets/icons.css?v=cce53e27">
 <script>/* Помечаем, что JS жив — только тогда прячем блоки под анимацию появления.
 Если app.js не доехал (кэш, блокировщик, ошибка), сторож через 2,5 с показывает всё как есть:
@@ -400,6 +400,16 @@ ym(111496189,'init',{ssr:true,webvisor:true,clickmap:true,ecommerce:"dataLayer",
         <div class="field"><label for="m-org">Организация или ИП *</label><input id="m-org" type="text" name="org" data-label="Организация" data-org required autocomplete="organization" placeholder="Подставится по ИНН"></div>
       </div>
       <p class="note inn-status" data-inn-status hidden></p>
+
+      <!-- Карточка компании. Реквизиты по ИНН подтягиваются из открытых реестров,
+           но банковских там нет — без них не выставить счёт и не подготовить договор.
+           Поле обязательно только для юрлица: физлицу его не показываем вовсе. -->
+      <div class="field field-file" data-legal-card>
+        <label for="m-card">Карточка компании с реквизитами *</label>
+        <input id="m-card" type="file" name="card" data-card required
+               accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.rtf,.odt">
+        <span class="note">PDF, Word, Excel или фото, до 10 МБ. Нужна, чтобы выставить счёт и подготовить договор.</span>
+      </div>
       <input type="hidden" name="kpp" data-label="КПП" data-kpp value="">
       <input type="hidden" name="ogrn" data-label="ОГРН" data-ogrn value="">
       <input type="hidden" name="legalAddress" data-label="Юридический адрес" data-legal-address value="">
@@ -468,6 +478,6 @@ ym(111496189,'init',{ssr:true,webvisor:true,clickmap:true,ecommerce:"dataLayer",
   </div>
 </dialog>
 <script>window.__PRODUCTS=[{"sku":"ULTRA-170","title":"ULTRA · 14 мкм · 170 г","price":1990,"weight":170},{"sku":"DELICATE-170","title":"DELICATE · 30 мкм · 170 г","price":1750,"weight":170},{"sku":"HARD-300","title":"HARD · 40 мкм · 300 г","price":890,"weight":300},{"sku":"SET-3","title":"Набор 3 в 1 · ULTRA + DELICATE + HARD","price":4630,"weight":640}];window.__DADATA="f80e44d20b652ea5c5d403cdf01308414f77b34e"</script>
-<script src="assets/app.js?v=a7135fda"></script>
+<script src="assets/app.js?v=3a69468c"></script>
 </body>
 </html>

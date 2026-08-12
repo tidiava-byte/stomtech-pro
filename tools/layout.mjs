@@ -388,6 +388,16 @@ export function orderForm(p) {
         <div class="field"><label for="${p}-org">Организация или ИП *</label><input id="${p}-org" type="text" name="org" data-label="Организация" data-org required autocomplete="organization" placeholder="Подставится по ИНН"></div>
       </div>
       <p class="note inn-status" data-inn-status hidden></p>
+
+      <!-- Карточка компании. Реквизиты по ИНН подтягиваются из открытых реестров,
+           но банковских там нет — без них не выставить счёт и не подготовить договор.
+           Поле обязательно только для юрлица: физлицу его не показываем вовсе. -->
+      <div class="field field-file" data-legal-card>
+        <label for="${p}-card">Карточка компании с реквизитами *</label>
+        <input id="${p}-card" type="file" name="card" data-card required
+               accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.rtf,.odt">
+        <span class="note">PDF, Word, Excel или фото, до 10 МБ. Нужна, чтобы выставить счёт и подготовить договор.</span>
+      </div>
       <input type="hidden" name="kpp" data-label="КПП" data-kpp value="">
       <input type="hidden" name="ogrn" data-label="ОГРН" data-ogrn value="">
       <input type="hidden" name="legalAddress" data-label="Юридический адрес" data-legal-address value="">

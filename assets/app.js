@@ -535,12 +535,17 @@
       if (!opts.length) return;
       var note = $('[data-buyer-note]', form);
       var fields = $('[data-legal-fields]', form);
-      var required = $$('[data-inn],[data-org]', form);
+      var card = $('[data-legal-card]', form);
+      var required = $$('[data-inn],[data-org],[data-card]', form);
 
       function apply() {
         var person = !!$('[data-buyer="person"]:checked', form);
         if (note) note.hidden = !person;
         if (fields) fields.hidden = person;
+        // Скрытое поле файла всё равно участвует в проверке формы,
+        // и браузер отказался бы отправлять её с невидимой ошибкой.
+        // Поэтому required снимается вместе с показом — см. цикл ниже.
+        if (card) card.hidden = person;
         required.forEach(function (el) {
           if (person) el.removeAttribute('required');
           else el.setAttribute('required', '');
@@ -774,7 +779,7 @@
         var title = form.getAttribute('data-lead') || 'Заявка';
         var data = { form: title, consent: true, page: location.pathname, items: [] };
         $$('input,select,textarea', form).forEach(function (f) {
-          if (f.type === 'checkbox' || !f.name) return;
+          if (f.type === 'checkbox' || f.type === 'file' || !f.name) return;
           if (f.type === 'radio' && !f.checked) return;
           data[f.name] = f.value.trim();
         });
@@ -810,11 +815,23 @@
           toast('Заявка принята. Свяжемся в течение рабочего дня и пришлём счёт');
         }
 
-        fetch(ORDER_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(data),
-        })
+        // Если приложена карточка компании, заявка уходит как multipart:
+        // файл в JSON не завернуть, не раздув его на треть базовой кодировкой.
+        // Сервер понимает оба вида — контракт ручки от этого не меняется.
+        var fileInput = form.querySelector('input[type=file][data-card]');
+        var file = fileInput && fileInput.files && fileInput.files[0];
+        var body, headers;
+        if (file) {
+          body = new FormData();
+          body.append('payload', JSON.stringify(data));
+          body.append('card', file);
+          headers = undefined;   // границу multipart проставит браузер сам
+        } else {
+          body = JSON.stringify(data);
+          headers = { 'Content-Type': 'application/json' };
+        }
+
+        fetch(ORDER_URL, { method: 'POST', headers: headers, body: body })
           .then(function (r) { return r.json().catch(function () { return { ok: false }; }); })
           .then(function (res) {
             if (res && res.ok) { accepted(); return; }

@@ -1092,6 +1092,17 @@ body.has-cookie-bar{--fab-bottom:104px}
 
 /* Пояснение для физлица. Заменяет собой поля реквизитов, а не дополняет их:
    человеку не надо заполнять то, по чему мы всё равно не отгрузим. */
+/* Поле для карточки компании. Системный вид у file-инпута разный в каждом
+   браузере, поэтому кнопку выбора приводим к тому же языку, что и остальные поля. */
+.field-file input[type=file]{width:100%;padding:11px 14px;font:inherit;font-size:14px;
+  color:var(--gray);background:var(--mist);border:1px dashed var(--line);
+  border-radius:var(--r-s);cursor:pointer}
+.field-file input[type=file]::file-selector-button{margin-right:12px;padding:7px 14px;
+  font:inherit;font-size:13px;font-weight:600;color:#fff;background:var(--ink);
+  border:0;border-radius:var(--r-pill);cursor:pointer}
+.field-file input[type=file]:hover{border-color:var(--blue)}
+.field-file .note{display:block;margin-top:6px}
+
 .buyer-note{display:flex;gap:14px;margin-top:16px;padding:16px 18px;
   background:var(--coral-soft);border-radius:var(--r-m)}
 .buyer-note .ic{flex:none;color:var(--coral-d)}

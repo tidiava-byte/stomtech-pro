@@ -63,7 +63,10 @@ function rate_limited($dir, $limit) {
 }
 
 /* ---------- разбор запроса ---------- */
-$raw = file_get_contents('php://input');
+/* Заявка приходит либо чистым JSON, либо multipart — когда к ней приложена
+   карточка компании. Разбираем оба вида: сам файл в JSON не завернуть,
+   не раздув его на треть базовой кодировкой. */
+$raw = isset($_POST['payload']) ? (string) $_POST['payload'] : file_get_contents('php://input');
 if (strlen($raw) > 20000) fail('Слишком большая заявка');
 $in = json_decode($raw, true);
 if (!is_array($in)) fail('Не разобрали данные формы');
@@ -104,7 +107,10 @@ $consent = !empty($in['consent']);
 if (!$consent) fail('Нужно согласие на обработку персональных данных');
 
 $buyer   = field($in, 'buyer', 60);
-$isLegal = ($buyer !== 'Физическое лицо');
+/* Юрлицо — только когда форма прямо это сказала. Сравнение «не физлицо»
+   считало юрлицом и обращения с форм «Контакты» и «Дилерам», где выбора типа
+   нет вовсе: сервер требовал у них ИНН и отклонял каждую такую заявку. */
+$isLegal = ($buyer === 'Юридическое лицо или ИП');
 $name    = field($in, 'name', 120);
 $phone   = normalize_phone(field($in, 'phone', 40));
 $email   = field($in, 'email', 120);
@@ -124,6 +130,25 @@ if ($isLegal) {
   if (strlen($inn) !== 10 && strlen($inn) !== 12) fail('ИНН — 10 или 12 цифр');
   if ($org === '') fail('Укажите организацию');
 }
+
+/* ---------- карточка компании ----------
+   Реквизиты по ИНН подтягиваются из открытых реестров, но банковских там нет:
+   без них не выставить счёт и не подготовить договор. Поэтому для юрлица файл
+   обязателен, а для физлица его не существует. */
+$card = null;
+if (isset($_FILES['card']) && $_FILES['card']['error'] !== UPLOAD_ERR_NO_FILE) {
+  $f = $_FILES['card'];
+  if ($f['error'] !== UPLOAD_ERR_OK) fail('Файл не загрузился, попробуйте ещё раз');
+  if ($f['size'] > 10 * 1024 * 1024) fail('Файл больше 10 МБ');
+  $ext = strtolower(pathinfo($f['name'], PATHINFO_EXTENSION));
+  $allowed = array('pdf', 'doc', 'docx', 'xls', 'xlsx', 'jpg', 'jpeg', 'png', 'rtf', 'odt');
+  if (!in_array($ext, $allowed)) fail('Подойдут PDF, Word, Excel, JPG или PNG');
+  // Имя файла приходит от посетителя: вычищаем разделители путей,
+  // иначе загрузка уедет мимо папки заявок.
+  $safeName = preg_replace('/[\\\\\/\x00-\x1F]/u', '', $f['name']);
+  $card = array('name' => mb_substr($safeName, 0, 120, 'UTF-8'), 'tmp' => $f['tmp_name']);
+}
+if ($isLegal && !$card) fail('Приложите карточку компании с реквизитами');
 
 if (rate_limited($DIR, (int) $cfg['rate_limit_per_hour'])) {
   reply(429, array('ok' => false, 'error' => 'Слишком много заявок подряд. Позвоните нам: +7 (930) 766-99-88'));
@@ -191,6 +216,14 @@ if ($key !== '') {
 $fileName = $DIR . '/orders/' . date('Y-m-d_His') . '-' . substr(md5(uniqid('', true)), 0, 6) . '.json';
 @file_put_contents($fileName, json_encode($order, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
 
+/* Файл кладём рядом с заявкой и под тем же именем: если Битрикс окажется
+   недоступен, карточка не потеряется вместе с заказом. */
+$cardPath = null;
+if ($card) {
+  $cardPath = preg_replace('/\.json$/', '', $fileName) . '-karta-' . $card['name'];
+  if (!@move_uploaded_file($card['tmp'], $cardPath)) $cardPath = null;
+}
+
 /**
  * Строка товара для сделки и счёта.
  *
@@ -216,6 +249,29 @@ function product_row($ownerType, $ownerId, $it) {
   return $row;
 }
 
+/**
+ * Пользовательское поле сделки для карточки компании.
+ * Ищем, а если его нет — заводим один раз. Отдельное поле удобнее вложения
+ * в ленту: менеджер видит карточку прямо в сделке и не листает историю.
+ */
+function deal_card_field($cfg) {
+  $r = b24($cfg, 'crm.deal.userfield.list', array(
+    'filter' => array('FIELD_NAME' => 'UF_CRM_COMPANY_CARD'),
+  ));
+  if (!empty($r['result'][0]['FIELD_NAME'])) return $r['result'][0]['FIELD_NAME'];
+
+  $a = b24($cfg, 'crm.deal.userfield.add', array('fields' => array(
+    'FIELD_NAME' => 'UF_CRM_COMPANY_CARD',
+    'USER_TYPE_ID' => 'file',
+    'XML_ID' => 'SITE_COMPANY_CARD',
+    'EDIT_FORM_LABEL' => array('ru' => 'Карточка компании'),
+    'LIST_COLUMN_LABEL' => array('ru' => 'Карточка компании'),
+    'SHOW_IN_LIST' => 'Y',
+    'EDIT_IN_LIST' => 'Y',
+  )));
+  return isset($a['result']) ? 'UF_CRM_COMPANY_CARD' : null;
+}
+
 /* ---------- Битрикс24 ---------- */
 function b24($cfg, $method, $params) {
   $url = rtrim($cfg['b24_webhook'], '/') . '/' . $method . '.json';
@@ -236,14 +292,47 @@ function b24($cfg, $method, $params) {
   return $res;
 }
 
-/** Компания по ИНН: сначала ищем среди реквизитов, потом заводим новую. */
-function company_by_inn($cfg, $inn) {
-  if ($inn === '') return null;
+/**
+ * Клиент по ИНН. Ищем среди реквизитов — и у компаний, и у контактов:
+ * индивидуальный предприниматель на портале может быть заведён и так, и так.
+ * Нашли — работаем на существующей карточке, новую не плодим: два клиента
+ * с одним ИНН расходятся историей заказов и взаимозачётами.
+ *
+ * ENTITY_TYPE_ID: 3 — контакт, 4 — компания.
+ */
+function client_by_inn($cfg, $inn) {
+  $out = array('companyId' => null, 'contactId' => null);
+  if ($inn === '') return $out;
   $r = b24($cfg, 'crm.requisite.list', array(
-    'filter' => array('RQ_INN' => $inn, 'ENTITY_TYPE_ID' => 4),
-    'select' => array('ENTITY_ID'),
+    'filter' => array('RQ_INN' => $inn),
+    'select' => array('ENTITY_TYPE_ID', 'ENTITY_ID'),
   ));
-  if (isset($r['result'][0]['ENTITY_ID'])) return (int) $r['result'][0]['ENTITY_ID'];
+  if (empty($r['result'])) return $out;
+  foreach ($r['result'] as $q) {
+    $type = (int) $q['ENTITY_TYPE_ID'];
+    $id = (int) $q['ENTITY_ID'];
+    if ($type === 4 && !$out['companyId']) $out['companyId'] = $id;
+    if ($type === 3 && !$out['contactId']) $out['contactId'] = $id;
+  }
+  return $out;
+}
+
+/**
+ * Контакт по телефону или почте. Нужен там, где ИНН не помог: у клиники
+ * заказы обычно оформляет один и тот же человек, и заводить его заново
+ * при каждом заказе — значит потерять историю переписки и звонков.
+ */
+function contact_by_comm($cfg, $phone, $email) {
+  $tries = array(array('PHONE', $phone), array('EMAIL', $email));
+  foreach ($tries as $t) {
+    if ($t[1] === '') continue;
+    $r = b24($cfg, 'crm.duplicate.findbycomm', array(
+      'entity_type' => 'CONTACT',
+      'type' => $t[0],
+      'values' => array($t[1]),
+    ));
+    if (!empty($r['result']['CONTACT'][0])) return (int) $r['result']['CONTACT'][0];
+  }
   return null;
 }
 
@@ -285,8 +374,12 @@ if (empty($cfg['b24_webhook'])) {
 
   /* --- компания и её реквизиты --- */
   if ($isLegal) {
-    $companyId = company_by_inn($cfg, $inn);
-    if (!$companyId) {
+    $found = client_by_inn($cfg, $inn);
+    $companyId = $found['companyId'];
+    $contactId = $found['contactId'];
+    // Компанию заводим, только если по этому ИНН вообще ничего не нашлось:
+    // ИП, заведённый контактом, компанией дублировать не надо.
+    if (!$companyId && !$contactId) {
       $r = b24($cfg, 'crm.company.add', array('fields' => array(
         'TITLE' => $org !== '' ? $org : ('ИНН ' . $inn),
         'COMPANY_TYPE' => 'CUSTOMER',
@@ -329,6 +422,18 @@ if (empty($cfg['b24_webhook'])) {
   }
 
   /* --- контактное лицо --- */
+  // По ИНН контакт мог уже найтись выше; если нет — пробуем по телефону и почте.
+  if (!$contactId) $contactId = contact_by_comm($cfg, $phone, $email);
+
+  if ($contactId) {
+    // Нашли существующего: привязываем к компании, если раньше связи не было.
+    if ($companyId) {
+      b24($cfg, 'crm.contact.update', array(
+        'id' => $contactId,
+        'fields' => array('COMPANY_ID' => $companyId),
+      ));
+    }
+  } else {
   $c = b24($cfg, 'crm.contact.add', array('fields' => array(
     'NAME' => $name,
     'ASSIGNED_BY_ID' => $assigned,
@@ -341,6 +446,7 @@ if (empty($cfg['b24_webhook'])) {
   )));
   if (isset($c['result'])) $contactId = (int) $c['result'];
   else $b24['errors'][] = 'контакт: ' . (isset($c['error_description']) ? $c['error_description'] : 'не создан');
+  }
 
   /* --- сделка --- */
   $lines = array();
@@ -377,6 +483,30 @@ if (empty($cfg['b24_webhook'])) {
   if (isset($d['result'])) {
     $dealId = (int) $d['result'];
     $b24['dealId'] = $dealId;
+
+    /* Карточка компании — в поле сделки. Если поле почему-то не завелось,
+       файл всё равно уходит в ленту сделки: потерять его нельзя, без него
+       менеджер не выставит счёт. */
+    if ($cardPath) {
+      $b64 = base64_encode(file_get_contents($cardPath));
+      $attached = false;
+      $field = deal_card_field($cfg);
+      if ($field) {
+        $u = b24($cfg, 'crm.deal.update', array('id' => $dealId, 'fields' => array(
+          $field => array('fileData' => array($card['name'], $b64)),
+        )));
+        $attached = !empty($u['result']);
+      }
+      if (!$attached) {
+        $t = b24($cfg, 'crm.timeline.comment.add', array('fields' => array(
+          'ENTITY_ID' => $dealId,
+          'ENTITY_TYPE' => 'deal',
+          'COMMENT' => 'Карточка компании, приложенная к заявке на сайте',
+          'FILES' => array(array($card['name'], $b64)),
+        )));
+        if (empty($t['result'])) $b24['errors'][] = 'карточка компании не прикрепилась';
+      }
+    }
 
     // Товарные позиции сделки. Без них счёт пришлось бы набирать руками.
     if ($items) {
