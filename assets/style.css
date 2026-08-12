@@ -1136,9 +1136,9 @@ body.has-cookie-bar .fab{bottom:104px}
    при равной специфичности побеждает последнее, иначе position:relative перебьёт fixed. */
 @media (max-width:860px){
   .cart-btn{position:fixed;right:16px;bottom:80px;z-index:180;
-    width:52px;height:52px;background:var(--ink);color:#fff;
-    box-shadow:0 14px 30px -10px rgba(15,25,34,.5)}
-  .cart-btn:hover{background:var(--ink);color:#fff}
+    width:52px;height:52px;background:var(--blue);color:#fff;
+    box-shadow:0 14px 30px -10px rgba(0,136,205,.55)}
+  .cart-btn:hover{background:var(--blue-d);color:#fff}
   .cart-btn .i{--i-size:24px}
   .cart-count{top:-2px;right:-2px;min-width:21px;height:21px;line-height:21px;font-size:12px}
 }
