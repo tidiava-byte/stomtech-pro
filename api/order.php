@@ -191,6 +191,31 @@ if ($key !== '') {
 $fileName = $DIR . '/orders/' . date('Y-m-d_His') . '-' . substr(md5(uniqid('', true)), 0, 6) . '.json';
 @file_put_contents($fileName, json_encode($order, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
 
+/**
+ * Строка товара для сделки и счёта.
+ *
+ * Наименование НЕ передаём, если товар связан с каталогом Битрикса: тогда
+ * подставится название из карточки товара. Оно совпадает с регистрационным
+ * удостоверением, а в счёте медизделие должно называться так, как
+ * зарегистрировано, — витринные ULTRA и DELICATE тут не годятся.
+ * Для позиций без связи с каталогом (набор) название берём с сайта:
+ * иначе строка уйдёт вовсе безымянной.
+ */
+function product_row($ownerType, $ownerId, $it) {
+  $row = array(
+    'ownerType' => $ownerType,
+    'ownerId' => $ownerId,
+    'price' => $it['price'],
+    'quantity' => $it['qty'],
+    'taxRate' => null,          // без НДС, ст. 145.1 НК РФ
+    'taxIncluded' => 'Y',
+    'measureCode' => 796,       // штука
+  );
+  if ($it['b24ProductId']) $row['productId'] = (int) $it['b24ProductId'];
+  else $row['productName'] = $it['title'];
+  return $row;
+}
+
 /* ---------- Битрикс24 ---------- */
 function b24($cfg, $method, $params) {
   $url = rtrim($cfg['b24_webhook'], '/') . '/' . $method . '.json';
@@ -357,17 +382,7 @@ if (empty($cfg['b24_webhook'])) {
     if ($items) {
       $rows = array();
       foreach ($items as $it) {
-        $row = array(
-          'ownerType' => 'D', 'ownerId' => $dealId,
-          'productName' => $it['title'],
-          'price' => $it['price'],
-          'quantity' => $it['qty'],
-          'taxRate' => null,          // без НДС, ст. 145.1 НК РФ
-          'taxIncluded' => 'Y',
-          'measureCode' => 796,       // штука
-        );
-        if ($it['b24ProductId']) $row['productId'] = (int) $it['b24ProductId'];
-        $rows[] = $row;
+        $rows[] = product_row('D', $dealId, $it);
       }
       $pr = b24($cfg, 'crm.item.productrow.set', array(
         'ownerType' => 'D', 'ownerId' => $dealId, 'productRows' => $rows,
@@ -394,15 +409,7 @@ if (empty($cfg['b24_webhook'])) {
         $b24['invoiceId'] = $invoiceId;
         $rows = array();
         foreach ($items as $it) {
-          $rows[] = array(
-            'ownerType' => 'SI', 'ownerId' => $invoiceId,
-            'productName' => $it['title'],
-            'price' => $it['price'],
-            'quantity' => $it['qty'],
-            'taxRate' => null,
-            'taxIncluded' => 'Y',
-            'measureCode' => 796,
-          );
+          $rows[] = product_row('SI', $invoiceId, $it);
         }
         b24($cfg, 'crm.item.productrow.set', array(
           'ownerType' => 'SI', 'ownerId' => $invoiceId, 'productRows' => $rows,

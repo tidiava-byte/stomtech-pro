@@ -57,9 +57,21 @@ const BY_SKU = new Map(PRODUCTS.items.map((p) => [p.sku, p]));
 const rub = (n) => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
 const perGram = (p) => (p.price / p.weight).toFixed(1).replace('.', ',');
 
+/* Цены нет — это ошибка сборки, а не повод напечатать «null ₽».
+   Ровно так страница каталога и показывала цену набора, пока её не задали:
+   подстановка молча выводила «null ₽» прямо на живом сайте. */
+function requirePrice(p, kind) {
+  if (p.price == null) {
+    throw new Error(
+      `у ${p.sku} нет цены в products.json — подстановка {{${kind}:${p.sku}}} невозможна`
+    );
+  }
+  return p.price;
+}
+
 const SUBST = {
-  price: (p) => `${rub(p.price)} ₽`,
-  priceNum: (p) => String(p.price),
+  price: (p) => `${rub(requirePrice(p, 'price'))} ₽`,
+  priceNum: (p) => String(requirePrice(p, 'priceNum')),
   perGram: (p) => (p.price == null ? '—' : perGram(p)),
   weight: (p) => String(p.weight),
   grit: (p) => String(p.grit),
