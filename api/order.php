@@ -484,27 +484,65 @@ if (empty($cfg['b24_webhook'])) {
     $dealId = (int) $d['result'];
     $b24['dealId'] = $dealId;
 
-    /* Карточка компании — в поле сделки. Если поле почему-то не завелось,
-       файл всё равно уходит в ленту сделки: потерять его нельзя, без него
-       менеджер не выставит счёт. */
+    /* ---------- карточка клиента ----------
+       Основное место — поле компании «Карточка клиента + документы».
+
+       Поле множественное, и дописать в него через REST, ничего не потеряв,
+       нельзя: при обновлении Битрикс заменяет набор целиком, а скачать уже
+       лежащие файлы через REST невозможно — значит, вернуть их обратно нечем.
+       Проверено вручную: передача идентификаторов старых файлов их не сохраняет.
+
+       Поэтому в поле компании пишем, только когда оно пустое. Если документы
+       там уже есть, файл уходит в сделку, а в компанию — запись в ленте
+       со ссылкой на сделку. Затереть документы клиента недопустимо ни при
+       каких обстоятельствах: восстановить их будет неоткуда.
+
+       У физлица компании нет — там карточка сразу идёт в поле сделки. */
     if ($cardPath) {
       $b64 = base64_encode(file_get_contents($cardPath));
       $attached = false;
-      $field = deal_card_field($cfg);
-      if ($field) {
-        $u = b24($cfg, 'crm.deal.update', array('id' => $dealId, 'fields' => array(
-          $field => array('fileData' => array($card['name'], $b64)),
-        )));
-        $attached = !empty($u['result']);
+      $companyField = isset($cfg['b24_company_card_field']) ? $cfg['b24_company_card_field'] : '';
+
+      if ($companyId && $companyField) {
+        $cur = b24($cfg, 'crm.company.get', array('id' => $companyId));
+        $has = !empty($cur['result'][$companyField]);
+        if (!$has) {
+          $u = b24($cfg, 'crm.company.update', array('id' => $companyId, 'fields' => array(
+            $companyField => array(array('fileData' => array($card['name'], $b64))),
+          )));
+          $attached = !empty($u['result']);
+          if (!$attached) $b24['errors'][] = 'карточка в компанию не легла';
+        } else {
+          // Документы уже есть — не трогаем их, а сообщаем менеджеру в ленте компании.
+          b24($cfg, 'crm.timeline.comment.add', array('fields' => array(
+            'ENTITY_ID' => $companyId,
+            'ENTITY_TYPE' => 'company',
+            'COMMENT' => 'К заявке с сайта приложена карточка клиента — файл в сделке №' . $dealId
+              . '. В поле «Карточка клиента + документы» не добавлен, чтобы не затереть уже загруженные документы.',
+          )));
+        }
       }
+
+      /* Не легло в компанию — кладём в сделку: у неё своё поле под карточку. */
+      if (!$attached) {
+        $field = deal_card_field($cfg);
+        if ($field) {
+          $u = b24($cfg, 'crm.deal.update', array('id' => $dealId, 'fields' => array(
+            $field => array('fileData' => array($card['name'], $b64)),
+          )));
+          $attached = !empty($u['result']);
+        }
+      }
+
+      /* И совсем последний рубеж — вложение в ленту сделки. */
       if (!$attached) {
         $t = b24($cfg, 'crm.timeline.comment.add', array('fields' => array(
           'ENTITY_ID' => $dealId,
           'ENTITY_TYPE' => 'deal',
-          'COMMENT' => 'Карточка компании, приложенная к заявке на сайте',
+          'COMMENT' => 'Карточка клиента, приложенная к заявке на сайте',
           'FILES' => array(array($card['name'], $b64)),
         )));
-        if (empty($t['result'])) $b24['errors'][] = 'карточка компании не прикрепилась';
+        if (empty($t['result'])) $b24['errors'][] = 'карточка клиента не прикрепилась никуда';
       }
     }
 
