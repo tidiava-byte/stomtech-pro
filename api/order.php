@@ -346,6 +346,28 @@ function contact_by_comm($cfg, $phone, $email) {
  *
  * Выбираем по длине ИНН: 12 цифр — это ИП, 10 — организация.
  */
+/**
+ * Поля, которые допускает набор реквизитов.
+ *
+ * Наборы устроены по-разному: у «Организации» есть КПП и ОГРН, а у «ИП» —
+ * ни того ни другого, зато есть ОГРНИП. Лишнее поле роняет весь запрос
+ * целиком: реквизиты не создаются, ИНН в карточку не попадает, а следом
+ * перестаёт работать и поиск клиента по ИНН — каждый заказ заводит новую
+ * компанию. Именно так и случилось на первых заявках от ИП.
+ *
+ * Поэтому состав полей спрашиваем у портала, а не держим в голове.
+ */
+function preset_fields($cfg, $presetId) {
+  $r = b24($cfg, 'crm.requisite.preset.field.list', array('preset' => array('ID' => $presetId)));
+  $out = array();
+  if (!empty($r['result'])) {
+    foreach ($r['result'] as $f) {
+      if (!empty($f['FIELD_NAME'])) $out[] = $f['FIELD_NAME'];
+    }
+  }
+  return $out;
+}
+
 function requisite_preset($cfg, $inn) {
   $r = b24($cfg, 'crm.requisite.preset.list', array(
     'filter' => array('ENTITY_TYPE_ID' => 8, 'ACTIVE' => 'Y'),
@@ -393,18 +415,29 @@ if (empty($cfg['b24_webhook'])) {
         $companyId = (int) $r['result'];
         $preset = requisite_preset($cfg, $inn);
         if ($preset) {
-          // Реквизиты отдельной сущностью: именно отсюда счёт берёт ИНН и КПП.
-          $rq = b24($cfg, 'crm.requisite.add', array('fields' => array(
+          /* Реквизиты отдельной сущностью: именно отсюда счёт берёт ИНН и КПП,
+             и именно по ним потом находится постоянный клиент. */
+          $allowed = preset_fields($cfg, $preset);
+          $want = array(
+            'RQ_COMPANY_NAME' => $org,
+            'RQ_COMPANY_FULL_NAME' => $org,
+            'RQ_INN' => $inn,
+            'RQ_KPP' => $kpp,
+            'RQ_OGRN' => $ogrn,
+            // У предпринимателя тот же номер называется иначе.
+            'RQ_OGRNIP' => $ogrn,
+          );
+          $rqFields = array(
             'ENTITY_TYPE_ID' => 4,
             'ENTITY_ID' => $companyId,
             'PRESET_ID' => $preset,
             'NAME' => $org !== '' ? $org : ('ИНН ' . $inn),
-            'RQ_COMPANY_NAME' => $org,
-            'RQ_INN' => $inn,
-            'RQ_KPP' => $kpp,
-            'RQ_OGRN' => $ogrn,
             'ACTIVE' => 'Y',
-          )));
+          );
+          foreach ($want as $k => $v) {
+            if ($v !== '' && (!$allowed || in_array($k, $allowed))) $rqFields[$k] = $v;
+          }
+          $rq = b24($cfg, 'crm.requisite.add', array('fields' => $rqFields));
           if (isset($rq['result']) && $address !== '') {
             // 6 — юридический адрес, 8 — сущность «реквизит»
             b24($cfg, 'crm.address.add', array('fields' => array(
@@ -413,7 +446,10 @@ if (empty($cfg['b24_webhook'])) {
               'ADDRESS_1' => $address, 'COUNTRY' => 'Россия',
             )));
           }
-          if (isset($rq['error'])) $b24['errors'][] = 'реквизиты: ' . $rq['error'];
+          if (empty($rq['result'])) {
+            $b24['errors'][] = 'реквизиты не созданы: '
+              . (isset($rq['error_description']) ? $rq['error_description'] : 'причина неизвестна');
+          }
         }
       } else {
         $b24['errors'][] = 'компания: ' . (isset($r['error_description']) ? $r['error_description'] : 'не создана');
