@@ -77,27 +77,49 @@ if (DRY) {
 /* ---------- отправка ---------- */
 // curl умеет FTP и сам создаёт недостающие каталоги. Отдельный клиент не нужен —
 // на Windows его пришлось бы ставить, а curl есть в системе.
+function upload(rel) {
+  const url = `ftp://${FTP_HOST}${FTP_DIR}/${posix.normalize(rel)}`;
+  execFileSync('curl', [
+    '--silent', '--show-error', '--fail',
+    '--ftp-create-dirs',
+    '--user', `${FTP_USER}:${FTP_PASS}`,
+    '--upload-file', join(ROOT, rel),
+    url,
+  ], { stdio: ['ignore', 'ignore', 'pipe'] });
+}
+
 let done = 0, failed = [];
 for (const rel of files) {
-  const url = `ftp://${FTP_HOST}${FTP_DIR}/${posix.normalize(rel)}`;
   try {
-    execFileSync('curl', [
-      '--silent', '--show-error', '--fail',
-      '--ftp-create-dirs',
-      '--user', `${FTP_USER}:${FTP_PASS}`,
-      '--upload-file', join(ROOT, rel),
-      url,
-    ], { stdio: ['ignore', 'ignore', 'pipe'] });
+    upload(rel);
     done++;
     process.stdout.write(`\rОтправлено ${done} из ${files.length}   `);
   } catch (e) {
     failed.push(rel);
   }
 }
-
 console.log();
+
+/* Второй заход по неудачным. На виртуальном хостинге FTP изредка рвёт соединение
+   на отдельных файлах — из 140 их бывает два-три, и это почти всегда лечится
+   повтором. Без повтора выкладка выглядит успешной, а на сайте лежит старая
+   версия конкретной страницы или картинки: это хуже, чем явная ошибка. */
 if (failed.length) {
-  console.log(`Не удалось отправить ${failed.length} файлов:`);
+  console.log(`Повторная попытка для ${failed.length} файлов...`);
+  const retry = failed;
+  failed = [];
+  for (const rel of retry) {
+    try {
+      upload(rel);
+      done++;
+    } catch (e) {
+      failed.push(rel);
+    }
+  }
+}
+
+if (failed.length) {
+  console.log(`Не удалось отправить ${failed.length} файлов даже со второй попытки:`);
   failed.forEach((f) => console.log('  ' + f));
   process.exit(1);
 }
