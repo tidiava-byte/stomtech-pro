@@ -82,6 +82,10 @@ export const SITE = {
   email: 'info@stomtech.pro',
   tg: 'https://t.me/stomtechpro',
   vk: 'https://vk.com/stomtech_pro',
+  // MAX. Мессенджер не умеет ссылок по номеру телефона — нужна личная ссылка
+  // из приложения (Профиль → поделиться) или max.ru/username. Пока строка пуста,
+  // в форме показывается номер текстом: по нему нас находят поиском в MAX.
+  max: '',
   // WhatsApp убран с сайта 2026-08-11 решением заказчика: мессенджер Meta,
   // как канал связи в материалах медизделия не используем. Если понадобится вернуть —
   // добавить сюда `wa`, иконку в gen-icons.mjs и ссылки в подвале, контактах и share.
@@ -183,7 +187,6 @@ ${links}
     </nav>
     <div class="nav-cta">
       <a href="${SITE.phoneHref}" class="nav-phone"><i class="i i-phone" aria-hidden="true"></i>${SITE.phone}</a>
-      <a href="zakaz.html" class="cart-btn" data-order hidden aria-label="Корзина"><i class="i i-cart" aria-hidden="true"></i><span class="cart-count" data-cart-count>0</span></a>
       <a href="zakaz.html" class="btn btn-primary btn-sm" data-order>Сделать заказ</a>
       <button class="burger" type="button" aria-label="Открыть меню"><span></span><span></span><span></span></button>
     </div>
@@ -287,7 +290,7 @@ export function termsBlock() {
         <li>Организациям и индивидуальным предпринимателям — по счёту, безналичным переводом с расчётного счёта.</li>
         ${RETAIL
           ? `<li>Частным покупателям — онлайн через Систему быстрых платежей. Кассовый чек приходит на указанный e-mail сразу после оплаты.</li>`
-          : `<li>Частным лицам напрямую с производства мы не отгружаем: продукция предназначена для профессионального применения в клинике.</li>`}
+          : `<li>Частным покупателям — через менеджера: оплату от физического лица сайт пока не проводит. Оставьте заявку, позвоните или напишите в Telegram, MAX либо ВКонтакте — оформим заказ и назовём способ оплаты.</li>`}
       </ul>
 
       <h4>Доставка</h4>
@@ -355,11 +358,28 @@ export function orderForm(p) {
         </label>
       </div>
 
+      <!-- Частный покупатель: переводим на менеджера, а не отказываем.
+           Онлайн-оплаты от физлица на сайте пока нет — она требует кассы и договора
+           с платёжным сервисом (YUKASSA.md). Но отказ в лоб терял человека совсем,
+           поэтому здесь каналы связи, а заявку форма всё равно отправляет.
+           Когда заработает оплата, блок заменяется розничной веткой чекаута
+           одновременно с флагом RETAIL. -->
       <div class="buyer-note" data-buyer-note hidden>
         <span class="ic"><i class="i i-info" aria-hidden="true"></i></span>
         <div>
-          <h4>Частным лицам мы не отгружаем</h4>
-          <p>Порошки — медицинское изделие для профессионального применения в клинике, поэтому напрямую с производства они поставляются только организациям и индивидуальным предпринимателям.${SITE.wb ? ` Купить в розницу можно в <a href="${SITE.wb}" class="tlink" rel="nofollow noopener" target="_blank">нашем магазине на Wildberries</a>.` : ' Розничная продажа идёт через маркетплейсы — напишите нам, подскажем, где купить.'}</p>
+          <h4>Для частных покупателей — через менеджера</h4>
+          <p>Оплату от физического лица сайт пока не проводит. Оставьте заявку — менеджер свяжется и оформит заказ. Или напишите сами, так быстрее:</p>
+          <p class="buyer-links">
+            <a href="${SITE.phoneHref}" class="tlink"><i class="i i-phone" aria-hidden="true"></i>${SITE.phone}</a>
+            <a href="${SITE.tg}" class="tlink" rel="noopener" target="_blank"><i class="i i-telegram" aria-hidden="true"></i>Telegram</a>
+            ${SITE.max
+              ? `<a href="${SITE.max}" class="tlink" rel="noopener" target="_blank"><i class="i i-chat" aria-hidden="true"></i>MAX</a>`
+              /* MAX не умеет ссылок по номеру телефона: только max.ru/username
+                 или личная ссылка из приложения. Пока её нет — показываем номер
+                 текстом, по нему нас найдут поиском в мессенджере. */
+              : `<span class="muted"><i class="i i-chat" aria-hidden="true"></i>MAX: ${SITE.phone}</span>`}
+            <a href="${SITE.vk}" class="tlink" rel="noopener" target="_blank"><i class="i i-vk" aria-hidden="true"></i>ВКонтакте</a>
+          </p>
         </div>
       </div>
 
@@ -405,6 +425,12 @@ ${body.trim()}
 
 ${footer()}
 
+<!-- Плавающие кнопки живут прямо в body, а не в шапке.
+     У шапки есть backdrop-filter, а элемент с фильтром становится системой отсчёта
+     для position:fixed внутри себя. Пока кнопка корзины лежала в шапке, она
+     закреплялась не за окном, а за полосой шапки высотой 76 пикселей — и уезжала
+     за верхний край экрана. Именно поэтому её никто никогда не видел. -->
+<a href="zakaz.html" class="cart-btn" data-order hidden aria-label="Корзина"><i class="i i-cart" aria-hidden="true"></i><span class="cart-count" data-cart-count>0</span></a>
 <a href="${SITE.tg}" class="fab" aria-label="Написать в Telegram" rel="noopener"><i class="i i-chat" aria-hidden="true"></i></a>
 ${meta.slug === 'zakaz' ? '' : orderModal()}
 ${meta.slug === 'oplata-i-dostavka' ? '' : termsModal()}

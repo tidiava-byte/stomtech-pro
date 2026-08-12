@@ -983,9 +983,14 @@ table.data td strong{color:var(--ink);font-weight:700}
   font-size:13px;color:#68798A}
 .foot-legal{font-size:12.5px;color:#5C6D7E;line-height:1.55;margin-top:26px;max-width:70ch}
 
-/* ======== 6.20 Плавающая кнопка связи ======== */
-.fab{position:fixed;right:22px;bottom:22px;z-index:180;display:grid;place-items:center;
-  width:58px;height:58px;border-radius:50%;background:var(--coral);color:#fff;
+/* ======== 6.20 Плавающие кнопки ========
+   Кнопка связи и кнопка корзины стоят в одной колонке у правого нижнего угла.
+   Их положение задано переменными: сдвинуть стопку (полоса cookie, узкий экран)
+   можно одной строкой, не пересчитывая руками отступ каждой кнопки. */
+:root{--fab-size:58px;--fab-right:22px;--fab-bottom:22px;--fab-gap:14px}
+
+.fab{position:fixed;right:var(--fab-right);bottom:var(--fab-bottom);z-index:180;display:grid;place-items:center;
+  width:var(--fab-size);height:var(--fab-size);border-radius:50%;background:var(--coral);color:#fff;
   box-shadow:var(--sh-coral);
   transform:translateY(90px) scale(.8);opacity:0;pointer-events:none;
   transition:transform .5s var(--e-spring),opacity .35s linear,background-color var(--t-fast) linear}
@@ -1029,10 +1034,9 @@ table.data td strong{color:var(--ink);font-weight:700}
 /* плавающая кнопка Telegram не должна налезать на полосу */
 /* Полоса cookie перекрывает плавающие кнопки. Соседним комбинатором это не решить:
    полоса добавляется в конец body, а кнопки стоят выше. Класс на body ставит app.js. */
-body.has-cookie-bar .fab{bottom:104px}
+body.has-cookie-bar{--fab-bottom:104px}
 @media (max-width:860px){
-  body.has-cookie-bar .fab{bottom:150px}
-  body.has-cookie-bar .cart-btn{bottom:214px}
+  body.has-cookie-bar{--fab-bottom:150px}
 }
 
 /* ======== 6.18.1 Карточки дистрибьюторов ======== */
@@ -1093,6 +1097,11 @@ body.has-cookie-bar .fab{bottom:104px}
 .buyer-note .ic{flex:none;color:var(--coral-d)}
 .buyer-note h4{font-size:15px;margin-bottom:4px}
 .buyer-note p{font-size:14px;color:var(--ink2);line-height:1.5}
+/* Каналы связи для частного покупателя. Переносятся по строкам сами:
+   на узком экране четыре канала в ряд не помещаются. */
+.buyer-note .buyer-links{display:flex;flex-wrap:wrap;gap:8px 18px;margin-top:10px;font-weight:600}
+.buyer-note .buyer-links a,.buyer-note .buyer-links span{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.buyer-note .buyer-links .i{--i-size:16px;color:var(--coral-d)}
 @media (max-width:600px){.buyer-switch{grid-template-columns:1fr}}
 
 /* ======== 6.19.1 Корзина ======== */
@@ -1121,30 +1130,34 @@ body.has-cookie-bar .fab{bottom:104px}
 .buy-qty button:hover{background:color-mix(in srgb,var(--buy) 14%,transparent)}
 .buy-qty button:active{transform:scale(.9)}
 
-/* Кнопка корзины в шапке. Появляется, только когда в корзине что-то есть —
-   пустая корзина в шапке ничего не сообщает и лишь занимает место. */
-.cart-btn{position:relative;display:grid;place-items:center;width:42px;height:42px;
-  border-radius:50%;background:var(--mist);color:var(--ink);
-  transition:background-color var(--t-fast) linear,color var(--t-fast) linear}
-.cart-btn:hover{background:var(--ink);color:#fff}
-.cart-btn .i{--i-size:20px}
-.cart-count{position:absolute;top:-3px;right:-3px;min-width:19px;height:19px;padding:0 5px;
-  border-radius:var(--r-pill);background:var(--coral);color:#fff;
-  font-size:11.5px;font-weight:700;line-height:19px;text-align:center;
-  box-shadow:0 0 0 2px #fff;font-variant-numeric:tabular-nums}
+/* Кнопка корзины. Закреплена у нижнего края на всех экранах, над кнопкой связи.
+   Раньше на широком экране она жила в шапке маленьким серым кружком среди других
+   элементов и терялась; корзина же должна быть видна с любого места страницы
+   и по одному и тому же адресу на любом устройстве.
 
-/* На узком экране шапка сжимается до логотипа и бургера, и корзина в ней теряется.
-   Выносим её в закреплённую кнопку у нижнего края — слева, чтобы не столкнуться
-   с плавающей кнопкой Telegram справа. Блок обязан идти ПОСЛЕ базовых правил выше:
-   при равной специфичности побеждает последнее, иначе position:relative перебьёт fixed. */
-@media (max-width:860px){
-  .cart-btn{position:fixed;right:16px;bottom:80px;z-index:180;
-    width:52px;height:52px;background:var(--blue);color:#fff;
-    box-shadow:0 14px 30px -10px rgba(0,136,205,.55)}
-  .cart-btn:hover{background:var(--blue-d);color:#fff}
-  .cart-btn .i{--i-size:24px}
-  .cart-count{top:-2px;right:-2px;min-width:21px;height:21px;line-height:21px;font-size:12px}
-}
+   Разметочно кнопка по-прежнему лежит в шапке — при position:fixed это не имеет
+   значения, зато порядок чтения с клавиатуры остаётся предсказуемым.
+
+   Появляется, только когда в корзине что-то есть: пустая корзина ничего
+   не сообщает и лишь загораживает контент. */
+.cart-btn{position:fixed;right:var(--fab-right);z-index:180;
+  bottom:calc(var(--fab-bottom) + var(--fab-size) + var(--fab-gap));
+  display:grid;place-items:center;width:var(--fab-size);height:var(--fab-size);
+  border-radius:50%;background:var(--blue);color:#fff;
+  box-shadow:0 14px 30px -10px rgba(0,136,205,.55);
+  transition:background-color var(--t-fast) linear,transform var(--t-fast) var(--e-out)}
+.cart-btn:hover{background:var(--blue-d);color:#fff;transform:translateY(-2px)}
+.cart-btn .i{--i-size:24px}
+
+/* Атрибут hidden прячет кнопку пустой корзины. Правило нужно явно и после
+   display:grid: авторский стиль перебивает браузерное [hidden]{display:none},
+   и без этой строки пустая корзина висела бы на экране всегда. */
+.cart-btn[hidden]{display:none}
+
+.cart-count{position:absolute;top:-2px;right:-2px;min-width:21px;height:21px;padding:0 5px;
+  border-radius:var(--r-pill);background:var(--coral);color:#fff;
+  font-size:12px;font-weight:700;line-height:21px;text-align:center;
+  box-shadow:0 0 0 2px #fff;font-variant-numeric:tabular-nums}
 
 /* Строки корзины внутри формы заказа */
 .inn-status{margin-top:-6px;padding:2px 0 2px 2px}
@@ -1294,7 +1307,9 @@ body.has-cookie-bar .fab{bottom:104px}
   .cta-inner{flex-direction:column;align-items:flex-start}
   .hero-bottles img{height:clamp(150px,40vw,230px);margin-inline:-10px}
   .hero-bottles img:nth-child(2){height:clamp(176px,46vw,262px)}
-  .fab{width:52px;height:52px;right:16px;bottom:16px}
+  /* Стопка плавающих кнопок на телефоне: обе становятся меньше и ближе к краю.
+     Переменные двигают и связь, и корзину разом. */
+  :root{--fab-size:52px;--fab-right:16px;--fab-bottom:16px;--fab-gap:12px}
 }
 @media (max-width:600px){
   body{font-size:16px}

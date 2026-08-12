@@ -203,14 +203,31 @@ function company_by_inn($cfg, $inn) {
   return null;
 }
 
-/** Набор полей реквизитов для юрлица. Без него счёт печатается пустым. */
-function requisite_preset($cfg) {
+/**
+ * Набор полей реквизитов. Без него счёт печатается без ИНН и КПП.
+ *
+ * Осторожно с фильтром: у наборов ENTITY_TYPE_ID всегда 8 — это тип «реквизит»,
+ * а не тип владельца. Фильтр по 4 (компания) молча возвращает пустой список,
+ * и реквизиты не создаются вовсе. На портале заказчика наборов три:
+ * 1 «Организация», 3 «ИП», 5 «Физ. лицо».
+ *
+ * Выбираем по длине ИНН: 12 цифр — это ИП, 10 — организация.
+ */
+function requisite_preset($cfg, $inn) {
   $r = b24($cfg, 'crm.requisite.preset.list', array(
-    'filter' => array('ENTITY_TYPE_ID' => 4),
-    'select' => array('ID', 'COUNTRY_ID'),
+    'filter' => array('ENTITY_TYPE_ID' => 8, 'ACTIVE' => 'Y'),
+    'select' => array('ID', 'NAME', 'COUNTRY_ID'),
   ));
-  if (isset($r['result'][0]['ID'])) return (int) $r['result'][0]['ID'];
-  return null;
+  if (empty($r['result'])) return null;
+
+  $wantIp = (strlen($inn) === 12);
+  foreach ($r['result'] as $p) {
+    $isIp = (mb_stripos($p['NAME'], 'ИП', 0, 'UTF-8') !== false);
+    $isPerson = (mb_stripos($p['NAME'], 'Физ', 0, 'UTF-8') !== false);
+    if ($isPerson) continue;
+    if ($wantIp === $isIp) return (int) $p['ID'];
+  }
+  return (int) $r['result'][0]['ID'];
 }
 
 $b24 = array('ok' => false, 'errors' => array());
@@ -237,7 +254,7 @@ if (empty($cfg['b24_webhook'])) {
       )));
       if (isset($r['result'])) {
         $companyId = (int) $r['result'];
-        $preset = requisite_preset($cfg);
+        $preset = requisite_preset($cfg, $inn);
         if ($preset) {
           // Реквизиты отдельной сущностью: именно отсюда счёт берёт ИНН и КПП.
           $rq = b24($cfg, 'crm.requisite.add', array('fields' => array(
