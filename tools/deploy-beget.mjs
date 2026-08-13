@@ -41,6 +41,8 @@ import { readdirSync, readFileSync, statSync, existsSync } from 'node:fs';
 import { join, dirname, relative, posix } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { execFileSync } from 'node:child_process';
+import { SITE } from './layout.mjs';
+import { ping, readQueue, writeQueue } from './indexnow.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const DRY = process.argv.includes('--dry');
@@ -249,3 +251,22 @@ if (failed.length) {
   process.exit(1);
 }
 console.log('Готово. Проверьте сайт и не забудьте, что HTML кэшируется у посетителя 0 секунд, а ассеты — год.');
+
+/* ---------- IndexNow ----------
+   Уведомление отправляется только теперь, когда файлы уже на хостинге:
+   сообщить об изменении раньше — значит позвать робота на старую версию
+   страницы, и он запомнит именно её.
+   Неудача здесь выкладку не отменяет: сайт выложен, а поисковик придёт сам,
+   просто позже. Поэтому код возврата остаётся нулевым. */
+const queued = readQueue();
+if (queued.length) {
+  const r = await ping(queued, new URL(SITE.origin).host);
+  if (r.ok) {
+    writeQueue([]);
+    console.log(`IndexNow: поисковикам отправлено адресов — ${r.sent}.`);
+  } else {
+    console.log(`IndexNow: уведомление не ушло (${r.error || 'ответ ' + r.status}). Адреса остались в очереди до следующей выкладки.`);
+  }
+} else {
+  console.log('IndexNow: изменившихся страниц нет, уведомлять не о чем.');
+}

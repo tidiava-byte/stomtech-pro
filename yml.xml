@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE yml_catalog SYSTEM "shops.dtd">
-<yml_catalog date="2026-08-13 10:26">
+<yml_catalog date="2026-08-13 16:41">
   <shop>
     <name>STOMTECH PRO</name>
     <company>ООО «Дентал Клин»</company>
@@ -20,7 +20,7 @@
       <picture>https://stomtech.pro/assets/img/bottle-ultra.webp</picture>
       <name>Порошок для воздушно-абразивной обработки STOMTECH PRO ULTRA 14 мкм, 170 г</name>
       <vendor>STOMTECH PRO</vendor>
-      <description>Порошок на основе эритритола, фракция 14 мкм. Для чувствительных пациентов, зоны вокруг имплантов, поддесневой обработки и детского приёма. Совместим со стандартными наконечниками и аппаратами для воздушно-абразивной обработки.</description>
+      <description>Порошок на основе эритритола, фракция 14 мкм. Для чувствительных пациентов, зоны вокруг имплантов, поддесневой обработки и детского приёма. Полирует поверхность и применяется как завершающий этап протокола гигиены. Совместим со стандартными наконечниками и аппаратами для воздушно-абразивной обработки.</description>
       <sales_notes>Продажа организациям и ИП. Отгрузка напрямую с производства.</sales_notes>
       <manufacturer_warranty>true</manufacturer_warranty>
       <country_of_origin>Россия</country_of_origin>

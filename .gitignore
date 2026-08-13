@@ -11,3 +11,7 @@ api/config.php
 
 # сохранённые заявки: персональные данные, в репозитории им не место
 api/orders/
+
+# рабочие файлы сборки: отпечатки страниц и очередь уведомлений IndexNow
+tools/.build-hashes.json
+tools/.indexnow-queue.json

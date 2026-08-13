@@ -13,10 +13,12 @@
    Правила: HTML в корне — результат сборки, руками его не редактируем.
    ============================================================ */
 import { readdirSync, readFileSync, writeFileSync, existsSync } from 'node:fs';
+import { createHash } from 'node:crypto';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { SITE, AUTHORS, DEFAULT_AUTHOR, RETAIL, pagePath, page, ctaBand, orderForm, termsBlock } from './layout.mjs';
 import { buildFeed } from './feed.mjs';
+import { readQueue, writeQueue, writeKeyFile } from './indexnow.mjs';
 
 /* ---------- адреса без .html ----------
    В разметке страниц ссылки пишутся как обычно — `href="catalog.html"`: так их
@@ -38,6 +40,10 @@ const cleanUrls = (html) => html
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const CONTENT = join(ROOT, 'tools', 'content');
+/* Отпечатки страниц прошлой сборки: по ним видно, что изменилось.
+   Файл рабочий, в репозиторий не идёт — на чистой копии просто первая
+   сборка сочтёт изменившимся весь сайт. */
+const HASHES_FILE = join(ROOT, 'tools', '.build-hashes.json');
 
 /* ---------- цены: единственный источник ----------
    Раньше цена была зашита в шести файлах и продублирована в JSON-LD и в описаниях
@@ -493,7 +499,15 @@ function articleJsonLd(m) {
   return { '@context': 'https://schema.org', '@graph': graph };
 }
 
-/* ---------- сборка ---------- */
+/* ---------- сборка ----------
+   Попутно считаем отпечаток каждой готовой страницы и сравниваем с прошлой
+   сборкой. Изменившиеся адреса уходят в очередь IndexNow: протокол требует
+   сообщать только о том, что действительно поменялось, — рассылка всего сайта
+   на каждой выкладке считается злоупотреблением. */
+const prevHashes = existsSync(HASHES_FILE) ? JSON.parse(readFileSync(HASHES_FILE, 'utf8')) : {};
+const hashes = {};
+const changedUrls = [];
+
 const all = pages.concat(posts);
 let count = 0;
 
@@ -517,9 +531,23 @@ for (const { meta, body } of all) {
   // крошки достаём из готовой разметки, чтобы не описывать их второй раз руками
   const extra = [breadcrumbLd(html), meta.slug === 'index' ? websiteLd() : null].filter(Boolean);
   if (extra.length) meta.jsonldExtra = extra;
-  writeFileSync(join(ROOT, `${meta.slug}.html`), cleanUrls(page(meta, html)), 'utf8');
+  const out = cleanUrls(page(meta, html));
+  writeFileSync(join(ROOT, `${meta.slug}.html`), out, 'utf8');
+
+  const hash = createHash('sha1').update(out).digest('hex').slice(0, 12);
+  hashes[meta.slug] = hash;
+  // 404 и прочие noindex-страницы поисковику не предлагаем
+  if (!meta.noindex && prevHashes[meta.slug] !== hash) {
+    changedUrls.push(SITE.origin + pagePath(meta.slug));
+  }
   count++;
 }
+
+writeFileSync(HASHES_FILE, JSON.stringify(hashes, null, 2) + '\n', 'utf8');
+/* Очередь дополняем, а не перезаписываем: между сборкой и выкладкой их может
+   пройти несколько, и адрес из первой не должен потеряться. */
+writeQueue([...new Set([...readQueue(), ...changedUrls])]);
+writeKeyFile();
 
 /* ---------- прайс для обработчика заявок ----------
    api/order.php пересчитывает сумму заказа сам: цены из браузера не принимаются

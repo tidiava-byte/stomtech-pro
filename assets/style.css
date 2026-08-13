@@ -534,6 +534,9 @@ p{text-wrap:pretty}
 .bento-cell.full{grid-column:span 6}
 .bento-cell h3{margin:18px 0 8px}
 .bento-cell p{font-size:15px;color:var(--gray);line-height:1.55}
+.bento-cell p a{color:var(--blue);font-weight:500;
+  box-shadow:inset 0 -1px 0 rgba(0,136,205,.35);transition:box-shadow var(--t-fast) linear}
+.bento-cell p a:hover{box-shadow:inset 0 -2px 0 var(--blue)}
 .bento-cell .no{font-size:12px;font-weight:700;letter-spacing:.14em;color:var(--gray-l);text-transform:uppercase}
 /* тёмная ячейка-акцент внутри бенто */
 .bento-cell.ink{background:var(--ink-deep);border-color:transparent;color:#A9B8C6}
@@ -783,11 +786,13 @@ table.data td strong{color:var(--ink);font-weight:700}
 .article>*+*{margin-top:22px}
 .article h2{font-size:clamp(23px,2.6vw,31px);margin-top:52px;letter-spacing:-.03em}
 .article h3{font-size:clamp(19px,2vw,22px);margin-top:38px}
-.article p a{color:var(--blue);font-weight:500;
+.article p a,.article li a{color:var(--blue);font-weight:500;
   box-shadow:inset 0 -1px 0 rgba(0,136,205,.35);transition:box-shadow var(--t-fast) linear}
-.article p a:hover{box-shadow:inset 0 -2px 0 var(--blue)}
+.article p a:hover,.article li a:hover{box-shadow:inset 0 -2px 0 var(--blue)}
 .article strong{color:var(--ink);font-weight:700}
-.article ul,.article ol{display:grid;gap:12px;padding-left:2px}
+/* list-style:none обязателен: нумерация и маркеры рисуются через ::before,
+   без сброса браузер печатает рядом ещё и свой маркер («1.» слева от бейджа). */
+.article ul,.article ol{display:grid;gap:12px;padding-left:2px;list-style:none}
 .article ul li{position:relative;padding-left:26px}
 .article ul li::before{content:"";position:absolute;left:5px;top:.62em;width:7px;height:7px;
   border-radius:50%;background:var(--blue);opacity:.65}
