@@ -16,6 +16,7 @@ import { readdirSync, readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { SITE, AUTHORS, DEFAULT_AUTHOR, RETAIL, pagePath, page, ctaBand, orderForm, termsBlock } from './layout.mjs';
+import { buildFeed } from './feed.mjs';
 
 /* ---------- адреса без .html ----------
    В разметке страниц ссылки пишутся как обычно — `href="catalog.html"`: так их
@@ -204,9 +205,11 @@ const proMark = (m) =>
    появилась сама. */
 const coverPhoto = (p) => {
   for (const m of p.body.matchAll(/<!--\s*@figure\s+(\{[\s\S]*?\})\s*-->/g)) {
-    let src;
-    try { src = JSON.parse(m[1]).src; } catch { continue; }
-    if (src && existsSync(join(ROOT, 'assets', 'img', 'blog', src))) return src;
+    let f;
+    try { f = JSON.parse(m[1]); } catch { continue; }
+    // возвращаем весь блок директивы: кроме имени файла нужен ещё и alt,
+    // написанный к этой фотографии в статье
+    if (f.src && existsSync(join(ROOT, 'assets', 'img', 'blog', f.src))) return f;
   }
   return null;
 };
@@ -219,9 +222,15 @@ const coverInner = (p, card = false) => {
   const photo = coverPhoto(p);
   const m = p.meta;
   if (!photo) return `<i class="i i-${m.icon}" aria-hidden="true"></i>`;
-  const small = card && existsSync(join(ROOT, 'assets', 'img', 'blog', 'card', photo));
-  const src = small ? `assets/img/blog/card/${photo}` : `assets/img/blog/${photo}`;
-  return `<img src="${src}" alt="" width="${small ? 800 : 1400}" height="${small ? 447 : 782}" loading="lazy" decoding="async">`;
+  const small = card && existsSync(join(ROOT, 'assets', 'img', 'blog', 'card', photo.src));
+  const src = small ? `assets/img/blog/card/${photo.src}` : `assets/img/blog/${photo.src}`;
+  /* Описание берём то же, что написано к этой фотографии внутри статьи.
+     Пустой alt здесь стоял не зря: рядом в карточке уже есть заголовок,
+     и дублировать его — мусор для экранного диктора. Но подпись из статьи
+     описывает сам кадр, а не повторяет заголовок: она полезна и человеку,
+     и поиску по картинкам. Если подписи нет, возвращаемся к пустому alt. */
+  const alt = (photo.alt || '').replace(/"/g, '&quot;');
+  return `<img src="${src}" alt="${alt}" width="${small ? 800 : 1400}" height="${small ? 447 : 782}" loading="lazy" decoding="async">`;
 };
 
 function postCard(p, opts = {}) {
@@ -434,14 +443,6 @@ const ORG = {
       certificationStatus: 'https://schema.org/CertificationActive',
       issuedBy: { '@type': 'Organization', name: 'Федеральная служба по надзору в сфере здравоохранения (Росздравнадзор)' },
     },
-    {
-      '@type': 'Certification',
-      name: 'Свидетельство на товарный знак STOMTECH.PRO',
-      certificationIdentification: '1155746',
-      datePublished: '2025-10-07',
-      certificationStatus: 'https://schema.org/CertificationActive',
-      issuedBy: { '@type': 'Organization', name: 'Федеральная служба по интеллектуальной собственности (Роспатент)' },
-    },
   ],
   award: [
     'Резидент инновационного центра «Сколково»',
@@ -560,7 +561,14 @@ ${urls.map((u) => `  <url>
   'utf8'
 );
 
+/* ---------- товарный фид ----------
+   Собирается из того же tools/products.json, что и цены на страницах: фид
+   с ценой, разошедшейся с сайтом, Яндекс отключает целиком. Поэтому он
+   пересобирается здесь же, а не отдельной командой, которую забудут запустить. */
+const offers = buildFeed();
+
 console.log(`Собрано страниц: ${count} (из них статей блога: ${posts.length}). sitemap.xml обновлён.`);
+console.log(`Товарный фид yml.xml обновлён, позиций: ${offers}.`);
 
 /* Памятка по недостающим фотографиям — она же техзадание на съёмку/генерацию */
 if (missingPhotos.length) {

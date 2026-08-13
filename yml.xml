@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE yml_catalog SYSTEM "shops.dtd">
+<yml_catalog date="2026-08-13 10:26">
+  <shop>
+    <name>STOMTECH PRO</name>
+    <company>ООО «Дентал Клин»</company>
+    <url>https://stomtech.pro/</url>
+    <currencies>
+      <currency id="RUB" rate="1"/>
+    </currencies>
+    <categories>
+      <category id="1">Порошки для профессиональной гигиены полости рта</category>
+    </categories>
+    <offers>
+    <offer id="ULTRA-170" available="true">
+      <url>https://stomtech.pro/ultra</url>
+      <price>1990</price>
+      <currencyId>RUB</currencyId>
+      <categoryId>1</categoryId>
+      <picture>https://stomtech.pro/assets/img/bottle-ultra.webp</picture>
+      <name>Порошок для воздушно-абразивной обработки STOMTECH PRO ULTRA 14 мкм, 170 г</name>
+      <vendor>STOMTECH PRO</vendor>
+      <description>Порошок на основе эритритола, фракция 14 мкм. Для чувствительных пациентов, зоны вокруг имплантов, поддесневой обработки и детского приёма. Совместим со стандартными наконечниками и аппаратами для воздушно-абразивной обработки.</description>
+      <sales_notes>Продажа организациям и ИП. Отгрузка напрямую с производства.</sales_notes>
+      <manufacturer_warranty>true</manufacturer_warranty>
+      <country_of_origin>Россия</country_of_origin>
+      <param name="Фракция" unit="мкм">14</param>
+      <param name="Основа">эритритол</param>
+      <param name="Фасовка" unit="г">170</param>
+    </offer>
+    <offer id="DELICATE-170" available="true">
+      <url>https://stomtech.pro/delicate</url>
+      <price>1750</price>
+      <currencyId>RUB</currencyId>
+      <categoryId>1</categoryId>
+      <picture>https://stomtech.pro/assets/img/bottle-delicate.webp</picture>
+      <name>Порошок для воздушно-абразивной обработки STOMTECH PRO DELICATE 30 мкм, 170 г</name>
+      <vendor>STOMTECH PRO</vendor>
+      <description>Порошок на основе эритритола, фракция 30 мкм. Универсальная фракция для регулярной профессиональной гигиены, подготовки к отбеливанию и реставрации. Совместим со стандартными наконечниками и аппаратами.</description>
+      <sales_notes>Продажа организациям и ИП. Отгрузка напрямую с производства.</sales_notes>
+      <manufacturer_warranty>true</manufacturer_warranty>
+      <country_of_origin>Россия</country_of_origin>
+      <param name="Фракция" unit="мкм">30</param>
+      <param name="Основа">эритритол</param>
+      <param name="Фасовка" unit="г">170</param>
+    </offer>
+    <offer id="HARD-300" available="true">
+      <url>https://stomtech.pro/hard</url>
+      <price>890</price>
+      <currencyId>RUB</currencyId>
+      <categoryId>1</categoryId>
+      <picture>https://stomtech.pro/assets/img/bottle-hard.webp</picture>
+      <name>Порошок для воздушно-абразивной обработки STOMTECH PRO HARD 40 мкм, 300 г</name>
+      <vendor>STOMTECH PRO</vendor>
+      <description>Порошок на основе бикарбоната натрия, фракция 40 мкм. Для плотного пигментированного налёта от кофе, чая и табака. Только наддесневая обработка. Совместим со стандартными наконечниками и аппаратами.</description>
+      <sales_notes>Продажа организациям и ИП. Отгрузка напрямую с производства.</sales_notes>
+      <manufacturer_warranty>true</manufacturer_warranty>
+      <country_of_origin>Россия</country_of_origin>
+      <param name="Фракция" unit="мкм">40</param>
+      <param name="Основа">сода</param>
+      <param name="Фасовка" unit="г">300</param>
+    </offer>
+    <offer id="SET-3" available="true">
+      <url>https://stomtech.pro/catalog</url>
+      <price>4630</price>
+      <currencyId>RUB</currencyId>
+      <categoryId>1</categoryId>
+      <picture>https://stomtech.pro/assets/img/photo/box-front.webp</picture>
+      <name>Набор порошков STOMTECH PRO 3 в 1: ULTRA 14 мкм, DELICATE 30 мкм, HARD 40 мкм</name>
+      <vendor>STOMTECH PRO</vendor>
+      <description>Набор из трёх фракций: ULTRA 14 мкм и DELICATE 30 мкм на эритритоле, HARD 40 мкм на бикарбонате натрия. Закрывает весь приём — от чувствительных пациентов до плотного налёта курильщика.</description>
+      <sales_notes>Продажа организациям и ИП. Отгрузка напрямую с производства.</sales_notes>
+      <manufacturer_warranty>true</manufacturer_warranty>
+      <country_of_origin>Россия</country_of_origin>
+      <param name="Основа">эритритол и сода</param>
+      <param name="Фасовка" unit="г">640</param>
+    </offer>
+    </offers>
+  </shop>
+</yml_catalog>
