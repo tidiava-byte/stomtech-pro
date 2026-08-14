@@ -31,7 +31,17 @@ import { fileURLToPath } from 'node:url';
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const KEY_FILE = join(ROOT, 'tools', 'indexnow.json');
 const QUEUE_FILE = join(ROOT, 'tools', '.indexnow-queue.json');
-const ENDPOINT = 'https://api.indexnow.org/indexnow';
+/* Адреса, куда отправляем уведомление.
+   Общий api.indexnow.org держит Microsoft, и он вместе с bing.com с августа 2026
+   стабильно отвечает нашему домену 403 при полностью исправном файле ключа
+   (проверено: text/plain, 32 байта, доступен по https). Яндекс на тот же запрос
+   отвечает 202. Поэтому шлём в оба адреса и считаем успехом ответ любого:
+   для нас Яндекс — основной поисковик, а общий адрес подхватит Bing и Seznam,
+   когда те перестанут отказывать. */
+const ENDPOINTS = [
+  'https://yandex.com/indexnow',
+  'https://api.indexnow.org/indexnow',
+];
 
 /* Ключ создаётся один раз и дальше живёт в репозитории. Менять его без нужды
    нельзя: сменили — старый файл на сайте пропал, а поисковик ещё какое-то время
@@ -81,18 +91,24 @@ export async function ping(urls, host) {
     // но пусть проверка будет: список формируется автоматически.
     urlList: urls.slice(0, 10000),
   };
-  try {
-    const res = await fetch(ENDPOINT, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json; charset=utf-8' },
-      body: JSON.stringify(body),
-      signal: AbortSignal.timeout(30000),
-    });
-    // 200 — принято, 202 — принято, ключ ещё проверяется. Оба означают успех.
-    return { sent: body.urlList.length, status: res.status, ok: res.status === 200 || res.status === 202 };
-  } catch (e) {
-    return { sent: 0, error: e.message };
+  const statuses = [];
+  let ok = false;
+  for (const endpoint of ENDPOINTS) {
+    try {
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json; charset=utf-8' },
+        body: JSON.stringify(body),
+        signal: AbortSignal.timeout(30000),
+      });
+      // 200 — принято, 202 — принято, ключ ещё проверяется. Оба означают успех.
+      if (res.status === 200 || res.status === 202) ok = true;
+      statuses.push(`${new URL(endpoint).host} ${res.status}`);
+    } catch (e) {
+      statuses.push(`${new URL(endpoint).host} ${e.message}`);
+    }
   }
+  return { sent: ok ? body.urlList.length : 0, status: statuses.join(', '), ok };
 }
 
 /* Ручная отправка, когда нужно сообщить об адресах вне обычного цикла:

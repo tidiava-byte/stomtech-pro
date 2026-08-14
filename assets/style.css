@@ -511,8 +511,9 @@ p{text-wrap:pretty}
    по вертикали: у флакона, коробки и стиков разные пропорции.
    flex, а не grid — в grid-области процентная высота картинки неразрешима */
 .format-img{display:flex;align-items:center;justify-content:center;
-  height:270px;padding:26px;background:var(--mist2);border-bottom:1px solid var(--line)}
-.format-img img{max-width:100%;max-height:100%;width:auto;height:auto;object-fit:contain}
+  height:270px;padding:26px;background:#fff;border-bottom:1px solid var(--line)}
+.format-img img{max-width:100%;max-height:100%;width:auto;height:auto;object-fit:contain;
+  filter:drop-shadow(0 16px 22px rgba(15,25,34,.14))}
 .format-body{padding:26px;flex:1;display:flex;flex-direction:column}
 .format-body h3{margin:12px 0 8px}
 .format-body p{font-size:15px;color:var(--gray);line-height:1.55;flex:1}
@@ -1078,9 +1079,12 @@ body.has-cookie-bar{--fab-bottom:104px}
 .set-card{display:grid;grid-template-columns:minmax(0,0.9fr) minmax(0,1.1fr);
   gap:0;margin-top:28px;overflow:hidden;background:#fff;
   border:1px solid var(--line);border-radius:var(--r-l);box-shadow:var(--sh-2)}
+/* Фон и тень здесь те же, что у флаконов в .prod-img: коробка и флаконы стоят
+   на одной витрине, и разная подложка читалась как разные съёмки. */
 .set-media{display:flex;align-items:center;justify-content:center;
-  padding:32px;background:var(--mist2)}
-.set-media img{max-width:100%;height:auto;border-radius:var(--r-s)}
+  padding:32px;background:#fff}
+.set-media img{max-width:100%;height:auto;border-radius:var(--r-s);
+  filter:drop-shadow(0 16px 22px rgba(15,25,34,.14))}
 .set-body{padding:clamp(26px,3.4vw,40px);display:flex;flex-direction:column}
 .set-body h3{margin:14px 0 10px;font-size:clamp(21px,2.4vw,27px);letter-spacing:-.02em}
 .set-body > p{color:var(--gray);line-height:1.6}
