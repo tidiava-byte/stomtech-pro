@@ -474,6 +474,21 @@ function authorLd(a) {
   };
 }
 
+/* Источники статьи в микроразметке. Список литературы в тексте читает человек,
+   а `citation` читает машина: поисковик и языковая модель видят, на какие работы
+   опирается материал, и это единственный формальный признак доказательности,
+   который они умеют различать. Заполняется полем "citation" в мета-блоке. */
+function citationLd(list) {
+  return list.map((c) => ({
+    '@type': 'ScholarlyArticle',
+    name: c.name,
+    ...(c.authors ? { author: c.authors } : {}),
+    ...(c.journal ? { isPartOf: { '@type': 'Periodical', name: c.journal } } : {}),
+    ...(c.year ? { datePublished: String(c.year) } : {}),
+    ...(c.url ? { url: c.url } : {}),
+  }));
+}
+
 function articleJsonLd(m) {
   const a = authorOf(m);
   const graph = [{
@@ -486,6 +501,7 @@ function articleJsonLd(m) {
     author: authorLd(a),
     publisher: ORG,
     mainEntityOfPage: { '@type': 'WebPage', '@id': SITE.origin + pagePath(m.slug) },
+    ...(m.citation && m.citation.length ? { citation: citationLd(m.citation) } : {}),
   }];
   if (m.faq && m.faq.length) {
     graph.push({
